@@ -5,43 +5,45 @@ import Room from '../assets/Room.svg'
 import Employee from '../assets/Deal.svg'
 import Rate from '../assets/Rate.svg'
 
+const NavItem = ({ icon, label, isActive = false }) => (
+  <li>
+    <a
+      href={`#${label.toLowerCase()}`}
+      className={`flex items-center gap-x-3 p-2 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer ${
+        isActive ? 'text-blue-600' : ''
+      }`}
+      aria-label={`Navigate to ${label}`}
+    >
+      <img src={icon} alt={`${label} icon`} className="h-5 w-5" />
+      <span>{label}</span>
+    </a>
+  </li>
+);
 
 function Sidebar() {
+  const navItems = [
+    { icon: Dashboard, label: 'Dashboard' },
+    { icon: Front_desk, label: 'Front Desk' },
+    { icon: Guest, label: 'Guest' },
+    { icon: Room, label: 'Room', isActive: true },
+    { icon: Employee, label: 'Employees' },
+    { icon: Rate, label: 'Rate' },
+  ];
+
   return (
-    <nav className="fixed left-0 top-16 bottom-0 bg-white w-64 z-20 pt-4 shadow-md">
-      
-      {/* Navigation Links */}
+    <nav 
+      className="fixed left-0 top-16 bottom-0 bg-white w-64 z-20 pt-4 shadow-md"
+      aria-label="Main navigation"
+    >
       <ul className="space-y-2 px-4">
-
-        <li className="flex items-center gap-x-3 p-2 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer">
-          <img src={Dashboard} className='h-5 w-5'></img>
-          <span>Dashboard</span>
-        </li>
-
-        <li className="flex items-center gap-x-3 p-2 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer">
-        <img src={Front_desk} className='h-5 w-5'></img>
-          <span>Front Desk</span>
-        </li>
-
-        <li className="flex items-center gap-x-3 p-2 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer">
-        <img src={Guest} className='h-5 w-5'></img>
-          <span>Guest</span>
-        </li>
-
-        <li className="flex items-center gap-x-3 p-2 text-gray-600 text-blue-600 rounded-md cursor-pointer">
-          <img src={Room} className='h-5 w-5'></img>
-          <span>Room</span>
-        </li>
-
-        <li className="flex items-center gap-x-3 p-2 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer">
-        <img src={Employee} className='h-5 w-5'></img>
-          <span>Employees</span>
-        </li>
-
-        <li className="flex items-center gap-x-3 p-2 text-gray-600 hover:bg-gray-100 rounded-md cursor-pointer">
-        <img src={Rate} className='h-5 w-5'></img>
-          <span>Rate</span>
-        </li>
+        {navItems.map((item) => (
+          <NavItem
+            key={item.label}
+            icon={item.icon}
+            label={item.label}
+            isActive={item.isActive}
+          />
+        ))}
       </ul>
     </nav>
   );
