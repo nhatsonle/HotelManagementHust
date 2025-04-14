@@ -38,59 +38,59 @@ const RoomTable = () => {
     <div className="container">
       {/* Filter Buttons */}
       <div className="content">
-      <div className="filter-buttons">
-        <div className="left-buttons">
-          {["All", "Available", "Booked", "Reserved", "Waitlist", "Blocked"].map(status => (
-            <button key={status} className={filter === status ? "active" : ""} onClick={() => { setFilter(status); setCurrentPage(1); }}>
-              {status} ({statusCounts[status] || 0})
-            </button>
-          ))}
+        <div className="filter-buttons">
+          <div className="left-buttons">
+            {["All", "Available", "Booked", "Reserved", "Waitlist", "Blocked"].map(status => (
+              <button key={status} className={filter === status ? "active" : ""} onClick={() => { setFilter(status); setCurrentPage(1); }}>
+                {status} ({statusCounts[status] || 0})
+              </button>
+            ))}
+          </div>
+          <button className="add-room">Add Room</button>
         </div>
-        <button className="add-room">Add Room</button>
-      </div>
-      
-      {/* Room Table */}
-      <table>
-        <thead>
-          <tr>
-            <th>Room Number</th>
-            <th>Bed Type</th>
-            <th>Room Floor</th>
-            <th>Room Facility</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {displayedRooms.map(room => (
-            <tr key={room.id}>
-              <td>{room.id}</td>
-              <td>{room.bedType}</td>
-              <td>{room.floor}</td>
-              <td>{room.facility}</td>
-              <td>
-                <span className={`status ${room.status.toLowerCase()}`}>{room.status}</span>
-              </td>
+
+        {/* Room Table */}
+        <table>
+          <thead>
+            <tr>
+              <th>Room Number</th>
+              <th>Bed Type</th>
+              <th>Room Floor</th>
+              <th>Room Facility</th>
+              <th>Status</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {displayedRooms.map(room => (
+              <tr key={room.id}>
+                <td>{room.id}</td>
+                <td>{room.bedType}</td>
+                <td>{room.floor}</td>
+                <td>{room.facility}</td>
+                <td>
+                  <span className={`status ${room.status.toLowerCase()}`}>{room.status}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
       {/* Pagination */}
       <div className="pagination">
-  <button onClick={handlePrevPage} disabled={currentPage === 1}>Previous</button>
-  <div className="page-numbers">
-    {[...Array(totalPages)].map((_, index) => (
-      <span
-        key={index + 1}
-        className={`page-number ${currentPage === index + 1 ? "active" : ""}`}
-      >
-        {index + 1}
-      </span>
-    ))}
-  </div>
-  <button onClick={handleNextPage} disabled={currentPage === totalPages}>Next</button>
-</div>
-    
+        <button onClick={handlePrevPage} disabled={currentPage === 1}>Previous</button>
+        <div className="page-numbers">
+          {[...Array(totalPages)].map((_, index) => (
+            <span
+              key={index + 1}
+              className={`page-number ${currentPage === index + 1 ? "active" : ""}`}
+            >
+              {index + 1}
+            </span>
+          ))}
+        </div>
+        <button onClick={handleNextPage} disabled={currentPage === totalPages}>Next</button>
+      </div>
+
     </div>
   );
 };
