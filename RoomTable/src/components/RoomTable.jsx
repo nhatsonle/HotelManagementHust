@@ -10,6 +10,9 @@ const roomsData = [
   { id: "#006", bedType: "Double bed", floor: "Floor -2", facility: "AC, shower, double bed, towel, bathtub, TV", status: "Waitlist" },
   { id: "#007", bedType: "Double bed", floor: "Floor -3", facility: "AC, shower, double bed, towel, bathtub, TV", status: "Reserved" },
   { id: "#008", bedType: "Single bed", floor: "Floor -5", facility: "AC, shower, single bed, towel, bathtub, TV", status: "Blocked" },
+  { id: "#008", bedType: "Single bed", floor: "Floor -5", facility: "AC, shower, single bed, towel, bathtub, TV", status: "Blocked" },
+  { id: "#008", bedType: "Single bed", floor: "Floor -5", facility: "AC, shower, single bed, towel, bathtub, TV", status: "Blocked" },
+  { id: "#008", bedType: "Single bed", floor: "Floor -5", facility: "AC, shower, single bed, towel, bathtub, TV", status: "Blocked" },
 ];
 
 const RoomTable = () => {
