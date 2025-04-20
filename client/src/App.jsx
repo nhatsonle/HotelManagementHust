@@ -1,11 +1,28 @@
 import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Header from './components/Header';
+import HeroSection from './components/HeroSection';
+import BookingSection from './components/BookingSection';
+import FeaturesSection from './components/FeaturesSection';
 
 function App() {
   return (
-    <>
-      <h1 className='text-5xl text-center p-5'>Vite React Project with TailwindCSS v4 and Shadcn UI</h1>
-
-    </>
+    <Router>
+      <Header />
+      <Routes>
+        <Route path="/" element={
+          <>
+            <HeroSection />
+            <BookingSection />
+            <FeaturesSection />
+          </>
+        } />
+        <Route path="/about" element={<div>About Page</div>} />
+        <Route path="/rooms" element={<div>Rooms Page</div>} />
+        <Route path="/pricing" element={<div>Pricing Page</div>} />
+      </Routes>
+    </Router>
   );
 }
+
 export default App;
