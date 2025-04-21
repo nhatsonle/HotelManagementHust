@@ -1,5 +1,6 @@
 import AboutUs from "../assets/images/AboutUs.png";
 import Biography from "../assets/images/Biography.jpg";
+import Carousel from "./Carousel";
 
 export default function AboutUsSection() {
   return(
@@ -35,6 +36,19 @@ export default function AboutUsSection() {
             <h3 className="text-lg font-semibold">Le Nhat Son</h3>
             <p className="text-gray-400">FOUNDER AND CHAIRMAN</p>
           </div>
+        </div>
+      </div>
+
+      {/* History Section */}
+      <div className="w-full py-16 px-4 bg-white text-black font-body">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-4xl font-semibold text-center mb-4">HISTORY OF NOVOTEL</h2>
+          <p className="text-center text-lg mb-8">
+            The story of Novotel Hotels and Resorts, which opened its first hotel in 1990, is a tale of continual innovation, remarkable expansion and a single-minded dedication to the highest of standards.
+          </p>
+          
+          <Carousel/>
+          
         </div>
       </div>
     </div>

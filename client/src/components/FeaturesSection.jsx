@@ -44,13 +44,13 @@ function FeaturesSection() {
               alt="Rooms"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-              <h3 className="text-white text-3xl font-semibold">Rooms</h3>
+            <div className="absolute inset-0 bg-transparent bg-opacity-40 flex items-center justify-center">
+              <h3 className="text-white text-3xl font-semibold pt-110">Rooms</h3>
             </div>
           </div>
 
           {/* Other Features */}
-          {features.map((feature) => (
+          {features.slice(1).map((feature) => (
             <div 
               key={feature.title}
               className="relative overflow-hidden rounded-lg shadow-lg cursor-pointer"
@@ -60,8 +60,8 @@ function FeaturesSection() {
                 alt={feature.title}
                 className="w-full h-64 object-cover"
               />
-              <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
-                <h3 className="text-white text-2xl font-semibold text-center">{feature.title}</h3>
+              <div className="absolute inset-0 bg-transparent bg-opacity-100 flex items-center justify-center">
+                <h3 className="text-white text-2xl font-semibold text-center pt-50">{feature.title}</h3>
               </div>
             </div>
           ))}
