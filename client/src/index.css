@@ -1,9 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
+
+
 
 @theme{
   --font-header: "Montserrat", sans-serif;
   --font-body: "Roboto Mono", monospace;
   --font-signature: "Dancing Script", cursive;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
 }
 
 .font-signature {

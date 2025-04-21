@@ -1,13 +1,10 @@
 import { Link } from 'react-router-dom';
-import Logo from "../assets/logo.svg";
+import FormatLogo from "./ui/Logo";
 import { FaFacebook, FaInstagram, FaTwitter, FaYoutube } from 'react-icons/fa';
 function Footer(){
   return(
     <footer className='flex justify-between items-center px-10 py-20 bg-black text-white font-body flex-col md:flex-row lg:flex-row gap-6'>
-      <Link to="/" className='text-blue-600 font-bold text-lg flex items-center'>
-        <img src={Logo} className='h-8 mr-2' alt="Logo" />
-        Novotel
-        </Link>
+      <FormatLogo />
         
         <div className='flex gap-4 '>
           <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className='hover:text-blue-600'>
