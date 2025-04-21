@@ -1,5 +1,6 @@
 import React from 'react';
-
+import {Link} from 'react-router-dom';
+import {Button} from './ui/button'; // Adjust the import path as necessary
 function StorySection() {
   return (
     <div className="bg-[#fdf8f3] py-25 font-body mt-10">
@@ -18,9 +19,10 @@ function StorySection() {
 
         {/* Right side - Text content */}
         <div className="md:w-1/2 space-y-6">
-          <h2 className="text-4xl font-semibold text-[#8B4513] font-header">
-            THE NOVOTEL STORY
-          </h2>
+          <Link to='/about' className="text-4xl font-semibold text-[#8B4513] font-header">
+          <h1 className='mb-5'>THE NOVOTEL STORY</h1>
+            
+          </Link>
           
           <p className="text-gray-700 leading-relaxed">
             Novotel was born from a love and passion for extraordinary hospitality and Vietnamese culture. 
@@ -33,6 +35,12 @@ function StorySection() {
               Signature Hospitality
             </div>
           </div>
+
+          <Button asChild variant="outline" className="font-header font-bold text-black hover:bg-[#8B4513] hover:text-white transition-colors duration-300">
+            <Link to="/about">DISCOVER MORE</Link>
+          </Button>
+
+
         </div>
       </div>
     </div>

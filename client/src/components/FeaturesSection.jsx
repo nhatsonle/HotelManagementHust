@@ -1,8 +1,8 @@
 import roomsImage from '../assets/images/rooms.jpg';
 import diningImage from '../assets/images/dining.avif';
-import meetingsImage from '../assets/images/meetings.jpg';
+import sportsImage from '../assets/images/sports.jpg';
 import facilitiesImage from '../assets/images/facilities.jpg';
-import weddingImage from '../assets/images/wedding.jpg';
+import tourImage from '../assets/images/tourist.jpg';
 
 const features = [
   {
@@ -16,8 +16,8 @@ const features = [
     description: "Exquisite culinary experiences"
   },
   {
-    title: "Conferences & Meetings",
-    image: meetingsImage,
+    title: "Sports",
+    image: sportsImage,
     description: "Professional meeting spaces"
   },
   {
@@ -26,8 +26,8 @@ const features = [
     description: "Top-notch amenities and services"
   },
   {
-    title: "Wedding Package",
-    image: weddingImage,
+    title: "Local Atractions",
+    image: tourImage,
     description: "Create your perfect wedding day"
   }
 ];
@@ -36,6 +36,7 @@ function FeaturesSection() {
   return (
     <section className="bg-gray-100 py-16 font-body">
       <div className="container mx-auto px-4">
+        <h2 className="text-4xl font-semibold text-center mb-20 mt-10 font-header">EXPLORE MORE WITH NOVOTEL</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Rooms - Large Card */}
           <div className="lg:row-span-2 relative overflow-hidden rounded-lg shadow-lg cursor-pointer">

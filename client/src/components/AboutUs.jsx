@@ -5,7 +5,7 @@ import Carousel from "./Carousel";
 export default function AboutUsSection() {
   return(
     <div className="bg-black text-white font-body flex flex-col items-center">
-      <div className="flex mt-15 pt-10 pb-10 text-bold text-4xl">
+      <div className="flex mt-15 pt-10 pb-10 text-bold text-4xl ">
         <h1 className="font-body">ABOUT US</h1>
       </div>
       
