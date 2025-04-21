@@ -3,4 +3,9 @@
 @theme{
   --font-header: "Montserrat", sans-serif;
   --font-body: "Roboto Mono", monospace;
+  --font-signature: "Dancing Script", cursive;
+}
+
+.font-signature {
+  font-family: var(--font-signature);
 }

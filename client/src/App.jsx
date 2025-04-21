@@ -6,6 +6,7 @@ import BookingSection from './components/BookingSection';
 import FeaturesSection from './components/FeaturesSection';
 import Footer from './components/Footer';
 import AboutUsSection from './components/AboutUs';
+import StorySection from './components/StorySection';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <>
             <HeroSection />
             <BookingSection />
+            <StorySection />
             <FeaturesSection />    
           </>
         } />

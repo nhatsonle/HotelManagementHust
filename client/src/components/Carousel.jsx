@@ -5,12 +5,12 @@ import carousel3 from '../assets/images/carousel/carousel-3.jpg';
 import carousel4 from '../assets/images/carousel/carousel-4.jpg';
 
 const images = [
-  { src: carousel1, alt: "Four Seasons History 1", description: "1980 - 1990 - NOVOTEL IS BORN" },
-  { src: carousel2, alt: "Four Seasons History 2", description: "1990 - 2000 - THE FIRST NOVOTEL RESORT IN VIETNAM" },
-  { src: carousel3, alt: "Four Seasons History 3",
+  { src: carousel1, alt: "Novotel History 1", description: "1980 - 1990 - NOVOTEL IS BORN" },
+  { src: carousel2, alt: "Novotel History 2", description: "1990 - 2000 - THE FIRST NOVOTEL RESORT IN VIETNAM" },
+  { src: carousel3, alt: "Novotel History 3",
     description: "2000 - 2010 - EXPANSION INTO THE US"
    },
-  { src: carousel4, alt: "Four Seasons History 4",
+  { src: carousel4, alt: "Novotel History 4",
     description: "2010 TO PRESENT - A NEW ERA OF LUXURY"
    },
 ];
@@ -48,6 +48,7 @@ function Carousel() {
       >
         {images.map((image, index) => (
           <div key={index} className="w-full h-full flex-shrink-0 relative">
+
             <div className="absolute inset-0 bg-transparent bg-opacity-40 flex items-center justify-center">
               <h3 className="text-white text-3xl font-semibold pt-110">{image.description}</h3>
             </div>

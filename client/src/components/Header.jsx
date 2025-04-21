@@ -12,7 +12,7 @@ function Header() {
         Novotel
       </Link>
       <nav className="flex gap-4">
-        <Link to="/about" className="hover:text-blue-600">About</Link>
+        <Link to="/about" className="hover:text-blue-600">About Us</Link>
         <Link to="/rooms" className="hover:text-blue-600">Rooms</Link>
         <Link to="/pricing" className="hover:text-blue-600">Pricing</Link>
         {/* Add other links as needed */}
