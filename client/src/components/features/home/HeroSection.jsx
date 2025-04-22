@@ -1,6 +1,6 @@
-import heroImage from '../../../assets/images/herosection.png';
 
-function HeroSection() {
+
+function HeroSection({heroImage}) {
   return (
     <section 
       className="relative h-screen bg-cover bg-center bg-no-repeat font-body"

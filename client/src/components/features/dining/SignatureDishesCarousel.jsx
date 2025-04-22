@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCoverflow, Navigation, Pagination } from 'swiper/modules';
-import signatureDishes from '../../../data';
+import signatureDishes from '../../../data/dining_data';
 import 'swiper/css';
 import 'swiper/css/effect-coverflow';
 import 'swiper/css/navigation';
@@ -75,13 +75,7 @@ function SignatureDishesCarousel() {
                   <div className="p-6 bg-white">
                     <h3 className="text-xl font-semibold mb-2">{dish.title}</h3>
                     <p className="text-gray-600 text-sm mb-4">{dish.description}</p>
-                    {dish.location && (
-                      <div className="mt-auto">
-                        <button className="w-full bg-black text-white text-sm py-2 px-4 uppercase hover:bg-gray-800 transition-colors">
-                          {dish.location}
-                        </button>
-                      </div>
-                    )}
+                    
                   </div>
                 </div>
               </div>

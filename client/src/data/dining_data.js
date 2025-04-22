@@ -16,7 +16,7 @@ const signatureDishes = [
     image: '/src/assets/images/Dish/Champagne.webp',
     title: 'Champagne Bar Azucar',
     description: 'A famous dessert mecca featuring artisanal ice creams and innovative treats',
-    location: 'Four Seasons Hotel And Residences at the Surf Club',
+    
   },
   {
     id: 4,

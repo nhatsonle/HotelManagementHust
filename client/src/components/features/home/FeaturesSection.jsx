@@ -22,12 +22,12 @@ const features = [
     description: "Professional meeting spaces"
   },
   {
-    title: "Service & Facilities",
+    title: "Services",
     image: facilitiesImage,
     description: "Top-notch amenities and services"
   },
   {
-    title: "Local Atractions",
+    title: "Attractions",
     image: tourImage,
     description: "Create your perfect wedding day"
   }
@@ -47,7 +47,7 @@ function FeaturesSection() {
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-transparent bg-opacity-40 flex items-center justify-center">
-              <h3 className="text-white text-3xl font-semibold pt-110">Rooms</h3>
+              <h3 className="text-white text-3xl font-semibold pt-50">Rooms</h3>
             </div>
           </Link>
 
