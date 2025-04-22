@@ -1,7 +1,7 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 import {Button} from '../../ui/button';
-
+import holiday from '../../../assets/images/holidays.jpg';
 function StorySection() {
   return (
     <div className="bg-[#fdf8f3] py-25 font-body mt-10">
@@ -10,7 +10,7 @@ function StorySection() {
         <div className="md:w-1/2">
           <div className="relative rounded-lg overflow-hidden border-4 border-black">
             <img
-              src="/src/assets/images/holidays.jpg"
+              src= {holiday}
               alt="Hotel Dining"
               className="w-full h-[400px] object-cover"
             />
