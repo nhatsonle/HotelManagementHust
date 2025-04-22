@@ -1,4 +1,4 @@
-import heroImage from '../assets/images/herosection.png';
+import heroImage from '../../../assets/images/herosection.png';
 
 function HeroSection() {
   return (
@@ -10,9 +10,7 @@ function HeroSection() {
         <h1 className="text-white text-6xl font-bold text-center max-w-4xl">
           Discover Extraordinary Comfort in Our Hotel
         </h1>
-        <div>
-          About Us
-        </div>
+      
       </div>
     </section>
   );

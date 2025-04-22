@@ -1,6 +1,7 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
-import {Button} from './ui/button'; // Adjust the import path as necessary
+import {Button} from '../../ui/button';
+
 function StorySection() {
   return (
     <div className="bg-[#fdf8f3] py-25 font-body mt-10">
@@ -39,7 +40,6 @@ function StorySection() {
           <Button asChild variant="outline" className="font-header font-bold text-black hover:bg-[#8B4513] hover:text-white transition-colors duration-300">
             <Link to="/about">DISCOVER MORE</Link>
           </Button>
-
 
         </div>
       </div>

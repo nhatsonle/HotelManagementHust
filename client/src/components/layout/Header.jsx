@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import FormatLogo from "./ui/Logo";
+import FormatLogo from "../ui/Logo";
 
 function Header() {
   return (

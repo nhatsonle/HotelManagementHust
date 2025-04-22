@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import carousel1 from '../assets/images/carousel/carousel-1.png';
-import carousel2 from '../assets/images/carousel/carousel-2.jpg';
-import carousel3 from '../assets/images/carousel/carousel-3.jpg';
-import carousel4 from '../assets/images/carousel/carousel-4.jpg';
+import carousel1 from '../../../assets/images/carousel/carousel-1.png';
+import carousel2 from '../../../assets/images/carousel/carousel-2.jpg';
+import carousel3 from '../../../assets/images/carousel/carousel-3.jpg';
+import carousel4 from '../../../assets/images/carousel/carousel-4.jpg';
 
 const images = [
   { src: carousel1, alt: "Novotel History 1", description: "1980 - 1990 - NOVOTEL IS BORN" },
@@ -17,6 +17,7 @@ const images = [
 
 function Carousel() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [swiperInstance, setSwiperInstance] = useState(null);
 
   // Auto advance slides
   useEffect(() => {
@@ -48,7 +49,6 @@ function Carousel() {
       >
         {images.map((image, index) => (
           <div key={index} className="w-full h-full flex-shrink-0 relative">
-
             <div className="absolute inset-0 bg-transparent bg-opacity-40 flex items-center justify-center">
               <h3 className="text-white text-3xl font-semibold pt-110">{image.description}</h3>
             </div>

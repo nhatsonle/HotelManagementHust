@@ -1,5 +1,5 @@
-import AboutUs from "../assets/images/AboutUs.png";
-import Biography from "../assets/images/Biography.jpg";
+import AboutUsImg from "../../../assets/images/AboutUs.png";
+import Biography from "../../../assets/images/Biography.jpg";
 import Carousel from "./Carousel";
 
 export default function AboutUsSection() {
@@ -10,12 +10,11 @@ export default function AboutUsSection() {
       </div>
       
       <div className="relative">
-        <img src={AboutUs} alt="About us" className="w-full object-cover" />
+        <img src={AboutUsImg} alt="About us" className="w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black"></div>
       </div>
 
-      {/* Removed padding-top and adjusted margins */}
-      <div className="text-center pl-25 pr-25  mt-10 relative z-10 ">
+      <div className="text-center pl-25 pr-25 mt-10 relative z-10">
         <p className="text-lg pb-5">When you think about Novotel, we hope unparalleled luxury comes to mind. But what is luxury, really? Our answer may surprise you.</p>
         <p className="text-lg">
         To us, true luxury is a meaningful sense of belonging. It is a dedicated focus on how people want to be treated, grounded in the genuine care you experience during your stay and defined by an abundance of humanity and generosity. This starts with our passionate team, welcoming you to be the centre of our world, anywhere in the world – and always with a distinctly human touch.
