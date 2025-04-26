@@ -6,7 +6,7 @@ export default function FormatLogo(){
     <>
     <Link to="/" className="flex items-center gap-2">
       <img src={Logo} className="h-8" alt="Logo" />
-      <span className="text-xl font-semibold tracking-wide">Novotel</span>
+      <span className="text-xl font-semibold tracking-wide text-white">Novotel</span>
     </Link>
     </>
   )
