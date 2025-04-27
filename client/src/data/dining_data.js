@@ -1,7 +1,7 @@
 const signatureDishes = [
   {
     id: 1,
-    image: '/src/assets/images/Dish/Spaghetti.webp',
+    image: '/src/assets/images/Dish/Champagne.webp',
     title: 'Le Cinq',
     description: 'Ham, Mushrooms and Truffle Spaghetti Gratin',
   },
