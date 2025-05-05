@@ -1,0 +1,15 @@
+const express = require('express');
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.send('Hotel Management API is running!');
+});
+
+// TODO: Mount routers from ./src/api when ready
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
