@@ -1,11 +1,20 @@
-// Cấu hình kết nối database (sử dụng biến môi trường)
+const {Client}  = require('pg');
 
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 5432,
-  user: process.env.DB_USER || 'user',
-  password: process.env.DB_PASSWORD || 'password',
-  database: process.env.DB_NAME || 'database',
-};
+const client = new Client({
+    user: 'postgres.owmhoegdsaeilrpkardv',
+    host: 'aws-0-ap-southeast-1.pooler.supabase.com',  
+    database: 'postgres',
+    password: 'hmshms',
+    port: 5432, 
+});
 
-module.exports = dbConfig;
+client.connect();
+
+client.query('SELECT * from roomtypes', (err, res) => {
+    if (err) {
+        console.error(err.message);
+    } else {
+        console.log(res.rows);
+    }
+    client.end();
+});
