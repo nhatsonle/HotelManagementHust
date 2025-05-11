@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 
 // Import controller
-const roomController = require('./room.controller');
+const roomController = require('../controllers/room.controller');
 
 // Routes
 router.get('/', roomController.getAllRooms);
