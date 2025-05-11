@@ -1,38 +1,36 @@
-// Hàm thực thi SQL cho Guests (CRUD khách hàng)
+const pool = require('./index');
 
-const db = require('./db');
+// Lấy tất cả khách
+exports.getAllGuests = async () => {
+  const result = await pool.query('SELECT * FROM guests ORDER BY guest_id DESC');
+  return result.rows;
+};
 
-// Thêm khách hàng mới
-async function addGuest(name, email) {
-    const query = 'INSERT INTO guests (name, email) VALUES ($1, $2)';
-    const values = [name, email];
-    await db.query(query, values);
-}
+// Lấy khách theo guest_id
+exports.getGuestById = async (guest_id) => {
+  const result = await pool.query('SELECT * FROM guests WHERE guest_id = $1', [guest_id]);
+  return result.rows[0];
+};
 
-// Lấy danh sách khách hàng
-async function getGuests() {
-    const query = 'SELECT * FROM guests';
-    const result = await db.query(query);
-    return result.rows;
-}
+// Thêm khách mới
+exports.createGuest = async (name, phone, email) => {
+  const result = await pool.query(
+    'INSERT INTO guests (name, phone, email) VALUES ($1, $2, $3) RETURNING *',
+    [name, phone, email]
+  );
+  return result.rows[0];
+};
 
-// Cập nhật thông tin khách hàng
-async function updateGuest(id, name, email) {
-    const query = 'UPDATE guests SET name = $1, email = $2 WHERE id = $3';
-    const values = [name, email, id];
-    await db.query(query, values);
-}
+// Cập nhật theo guest_id
+exports.updateGuest = async (guest_id, name, phone, email) => {
+  const result = await pool.query(
+    'UPDATE guests SET name = $1, phone = $2, email = $3 WHERE guest_id = $4 RETURNING *',
+    [name, phone, email, guest_id]
+  );
+  return result.rows[0];
+};
 
-// Xóa khách hàng
-async function deleteGuest(id) {
-    const query = 'DELETE FROM guests WHERE id = $1';
-    const values = [id];
-    await db.query(query, values);
-}
-
-module.exports = {
-    addGuest,
-    getGuests,
-    updateGuest,
-    deleteGuest,
+// Xoá theo guest_id
+exports.deleteGuest = async (guest_id) => {
+  await pool.query('DELETE FROM guests WHERE guest_id = $1', [guest_id]);
 };

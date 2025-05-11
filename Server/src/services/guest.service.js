@@ -1,7 +1,17 @@
-// Chứa business logic chính của ứng dụng cho khách hàng
+const guestQueries = require('../db/guest.queries');
 
-class GuestService {
-  // Add methods and logic for guest-related operations here
-}
+exports.getAllGuests = () => guestQueries.getAllGuests();
 
-module.exports = GuestService;
+exports.getGuestById = (guest_id) => guestQueries.getGuestById(guest_id);
+
+exports.createGuest = (guest) => {
+  const { name, phone, email } = guest;
+  return guestQueries.createGuest(name, phone, email);
+};
+
+exports.updateGuest = (guest_id, guest) => {
+  const { name, phone, email } = guest;
+  return guestQueries.updateGuest(guest_id, name, phone, email);
+};
+
+exports.deleteGuest = (guest_id) => guestQueries.deleteGuest(guest_id);
