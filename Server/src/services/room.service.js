@@ -1,6 +1,25 @@
 // Chứa business logic chính của ứng dụng cho phòng
 const roomQueries = require('../db/room.queries');
+const Joi = require('joi');
+
 const ALLOWED_STATUS = ['Available', 'Booked', 'Reserved', 'Cleaning', 'Maintenance'];
+
+// Schema validate đầu vào
+const schema = Joi.object({
+  room_number: Joi.string().trim().min(1).max(10).required(),
+  bed_type: Joi.string().trim().min(2).max(50).required(),
+  room_floor: Joi.number().integer().min(1).max(100).required(),
+  room_facility: Joi.string().trim().max(500).allow(null, ''),
+  room_status: Joi.string().valid(...ALLOWED_STATUS).required(),
+  type_id: Joi.number().integer().positive().required(),
+  adult_number: Joi.number().integer().min(1).max(10).required(),
+  child_number: Joi.number().integer().min(0).max(10).required()
+});
+
+// Schema validate cho update status
+const statusSchema = Joi.object({
+  room_status: Joi.string().valid(...ALLOWED_STATUS).required()
+});
 
 exports.getRooms = async (query) => {
   const filters = {
@@ -72,18 +91,23 @@ exports.getRooms = async (query) => {
   return roomQueries.getRooms(filters);
 };
 
-
+exports.getRoomById = async (id) => {
+  return await roomQueries.getRoomById(id);
+};
 
 exports.createRoom = async (roomData) => {
-  return await roomQueries.createRoom(roomData);
+  const value = await schema.validateAsync(roomData);
+  return await roomQueries.createRoom(value);
 };
 
 exports.updateRoom = async (id, roomData) => {
-  return await roomQueries.updateRoom(id, roomData);
+  const value = await schema.validateAsync(roomData);
+  return await roomQueries.updateRoom(id, value);
 };
 
 exports.updateRoomStatus = async (id, status) => {
-  return await roomQueries.updateRoomStatus(id, status);
+  const value = await statusSchema.validateAsync(status);
+  return await roomQueries.updateRoomStatus(id, value);
 };
 
 exports.deleteRoom = async (id) => {
