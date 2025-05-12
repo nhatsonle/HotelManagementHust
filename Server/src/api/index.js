@@ -3,10 +3,12 @@
 const express = require('express');
 const roomRouter = require('./room.routes');
 const roomTypeRouter = require('./roomType.routes');
+const rateRouter = require('./rate.routes');
 const apiRouter = express.Router();
 
 // Mount các router con
 apiRouter.use('/rooms', roomRouter);
 apiRouter.use('/room-types', roomTypeRouter);
+apiRouter.use('/rates', rateRouter);
 
 module.exports = apiRouter;
