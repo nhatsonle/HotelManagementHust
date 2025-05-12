@@ -6,13 +6,14 @@ const router = express.Router();
 // Import controller
 const roomController = require('../controllers/room.controller');
 
-// Routes
-router.get('/', roomController.getAllRooms);
+// Basic CRUD routes
+router.get('/', roomController.getRooms);
 router.get('/:id', roomController.getRoomById);
 router.post('/', roomController.createRoom);
 router.put('/:id', roomController.updateRoom);
-router.patch('/:id/status', roomController.updateRoomStatus);
 router.delete('/:id', roomController.deleteRoom);
 
+// Status update route
+router.patch('/:id/status', roomController.updateRoomStatus);
 
 module.exports = router;

@@ -1,9 +1,10 @@
 // Xử lý logic request/response cho phòng
 const roomService = require('../services/room.service');
 
-exports.getAllRooms = async (req, res, next) => {
+exports.getRooms = async (req, res, next) => {
   try {
-    const rooms = await roomService.getAllRooms(req.query);
+    const { floor, status } = req.query;
+    const rooms = await roomService.getRooms({ floor, status });
     res.json(rooms);
   } catch (error) {
     next(error);
