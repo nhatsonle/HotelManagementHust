@@ -1,25 +1,54 @@
 const db = require('./index');
 
-const getRooms = async ({floor, status}) => {
-  let sql = `SELECT * FROM rooms`;
-  const conditions = [];
+const getRooms = async (filters) => {
+  let sql = 'SELECT * FROM rooms';
+  const where = [];
   const params = [];
 
-  if (floor !== undefined) {
-    params.push(floor);
-    conditions.push(`room_floor = $${params.length}`);
+  //  equal 
+  for (const [col, val] of Object.entries(filters.equal)) {
+    params.push(val);
+    where.push(`${col} = $${params.length}`);
   }
-  if (status !== undefined) {
-    params.push(status);
-    conditions.push(`room_status = $${params.length}`);
+
+  //  like 
+  for (const [col, val] of Object.entries(filters.like)) {
+    params.push(`%${val}%`);
+    where.push(`${col} ILIKE $${params.length}`);
   }
-  if (conditions.length) sql += ` WHERE ` + conditions.join(' AND ');
-  sql += ` ORDER BY room_number`;
+
+  //  between 
+  for (const [col, r] of Object.entries(filters.range)) {
+    params.push(r.min, r.max);
+    where.push(`${col} BETWEEN $${params.length - 1} AND $${params.length}`);
+  }
+
+  // ========== greater-than ==========
+  for (const [col, val] of Object.entries(filters.gt ?? {})) {
+    params.push(val);
+    where.push(`${col} > $${params.length}`);
+  }
+
+  // ========== less-than ==========
+  for (const [col, val] of Object.entries(filters.lt ?? {})) {
+    params.push(val);
+    where.push(`${col} < $${params.length}`);
+  }
+
+  if (where.length) sql += ' WHERE ' + where.join(' AND ');
+
+  //  order 
+  if (filters.orderBy)
+    sql += ` ORDER BY ${filters.orderBy.field} ${filters.orderBy.dir}`;
+
+  //  pagination 
+  sql += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+  params.push(filters.limit, filters.offset);
 
   const { rows } = await db.query(sql, params);
   return rows;
-
 };
+
 
 const getRoomById = async (id) => {
   const query = 'SELECT * FROM rooms WHERE room_id = $1';
