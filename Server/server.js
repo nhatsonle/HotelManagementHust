@@ -1,9 +1,14 @@
 const express = require('express');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./src/config/swagger.config');
 const app = express();
 const apiRouter = require('./src/api/index');
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// Swagger UI setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 // Mount the API router
 app.use('/api', apiRouter);
@@ -23,4 +28,5 @@ app.use((err, req, res, next) => {
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log(`API Documentation available at http://localhost:${PORT}/api-docs`);
 });
