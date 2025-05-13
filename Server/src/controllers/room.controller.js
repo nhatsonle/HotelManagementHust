@@ -50,7 +50,7 @@ exports.updateRoom = async (req, res, next) => {
 exports.updateRoomStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status } = req.query;
 
     const updated = await roomService.updateRoomStatus(id, status);
     if (!updated) return res.status(404).json({ message: 'Room not found' });

@@ -16,10 +16,6 @@ const schema = Joi.object({
   child_number: Joi.number().integer().min(0).max(10).required()
 });
 
-// Schema validate cho update status
-const statusSchema = Joi.object({
-  room_status: Joi.string().valid(...ALLOWED_STATUS).required()
-});
 
 exports.getRooms = async (query) => {
   const filters = {
@@ -106,8 +102,8 @@ exports.updateRoom = async (id, roomData) => {
 };
 
 exports.updateRoomStatus = async (id, status) => {
-  const value = await statusSchema.validateAsync(status);
-  return await roomQueries.updateRoomStatus(id, value);
+  const value = await Joi.string().valid(...ALLOWED_STATUS).required().validateAsync(status);
+  return await roomQueries.updateRoomStatus(id, { room_status: value });
 };
 
 exports.deleteRoom = async (id) => {

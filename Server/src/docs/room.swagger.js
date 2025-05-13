@@ -328,7 +328,7 @@
 /**
  * @swagger
  * /api/rooms/{id}/status:
- *   put:
+ *   patch:
  *     summary: Update room status
  *     tags: [Rooms]
  *     parameters:
@@ -338,12 +338,13 @@
  *           type: integer
  *         required: true
  *         description: The room id
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/RoomStatus'
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [Available, Booked, Reserved, Cleaning, Maintenance]
+ *         required: true
+ *         description: New status of the room
  *     responses:
  *       200:
  *         description: The room status was updated
