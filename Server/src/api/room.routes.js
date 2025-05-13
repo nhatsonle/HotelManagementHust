@@ -2,10 +2,9 @@
 const express = require('express');
 const router = express.Router();
 
-// Import controller
 const roomController = require('../controllers/room.controller');
 
-// Basic CRUD routes
+//  CRUD routes
 router.get('/', roomController.getRooms);
 router.post('/', roomController.createRoom);
 router.get('/:id', roomController.getRoomById);
