@@ -2,65 +2,138 @@ import attractions from '../../../data/attractions_data';
 import SubHeroSection from '@/components/ui/SubHeroSection';
 import { useState } from 'react';
 
-export default function Attractions() {
-  const [loadedImages, setLoadedImages] = useState({});
+export default function AttractionsCircle() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const total = 6;
+  const radius = 320; // radius of the circle for images
+  const sizeActive = 300; // size of active image
+  const sizeInactive = 200; // size of inactive images
+  const offsetX = -650; // shift entire circle container left
 
-  const handleImageLoad = (id) => {
-    setLoadedImages(prev => ({ ...prev, [id]: true }));
+  const rotateLeft = () => {
+    setActiveIndex((prev) => (prev - 1 + total) % total);
+  };
+
+  const rotateRight = () => {
+    setActiveIndex((prev) => (prev + 1) % total);
+  };
+
+  // Helper to normalize angle to [0, 360)
+  const normalizeAngle = (angle) => {
+    let a = angle % 360;
+    if (a < 0) a += 360;
+    return a;
+  };
+
+  // Active background style, with overlay for darkening
+  const activeBackgroundStyle = {
+    backgroundImage: `url(${attractions[activeIndex].image})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    filter: 'brightness(0.5)',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    zIndex: -10,
+    transition: 'background-image 0.8s ease-in-out',
   };
 
   return (
-    <div className="pt-[72px] font-body">
-      <SubHeroSection 
-        title="Local Attractions" 
-        description="Discover the best attractions and activities around our hotel" 
-        image={attractions[0].image}
-      />
+    <>
+      {/* Background image */}
+      <div aria-hidden="true" style={activeBackgroundStyle} />
 
-      <div className="relative max-w-7xl mx-auto px-4 py-16">
-        <h2 className="text-center text-4xl uppercase tracking-wider mb-12 font-header font-bold">
-          LOCAL ATTRACTIONS
-        </h2>
-        <p className="text-center text-gray-600 mb-16 max-w-3xl mx-auto">
-          Explore the vibrant attractions and cultural experiences surrounding our hotel. From historical landmarks to modern entertainment, there's something for everyone.
-        </p>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {attractions.map((attraction) => (
-            <div 
-              key={attraction.id} 
-              className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-transparent font-sans max-w-full overflow-x-hidden relative z-10">
+        <div className="flex flex-col md:flex-row items-center max-w-4xl w-full">
+          {/* Circle and arrows section */}
+          <div className="flex flex-col items-center">
+            <div
+              className="relative rounded-full border-4 border-white shadow-lg flex items-center justify-center"
+              style={{
+                width: 500,
+                height: 500,
+                transform: `translateX(${offsetX}px)`
+      
+              }}
             >
-              <div className="h-64 overflow-hidden relative">
-                {!loadedImages[attraction.id] && (
-                  <div className="absolute inset-0 bg-gray-200 animate-pulse flex items-center justify-center">
-                    <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                  </div>
-                )}
-                <img
-                  src={attraction.image}
-                  alt={attraction.title}
-                  className={`w-full h-full object-cover transition-transform duration-500 hover:scale-110 ${
-                    loadedImages[attraction.id] ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  onLoad={() => handleImageLoad(attraction.id)}
-                />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-semibold mb-4 text-gray-800">{attraction.title}</h3>
-                <ul className="space-y-2 text-gray-600">
-                  {attraction.features.map((feature, index) => (
-                    <li key={index} className="flex items-start group">
-                      <span className="mr-2 mt-1 text-blue-600 transition-transform duration-300 group-hover:scale-125">•</span>
-                      <span className="group-hover:text-gray-800 transition-colors duration-300">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {attractions.slice(0, total).map((attraction, index) => {
+                const angle =
+                  (360 / total) * index - activeIndex * (360 / total);
+                const rad = (angle * Math.PI) / 180;
+                const x = Math.cos(rad) * radius;
+                const y = Math.sin(rad) * radius;
+                const isActive = index === activeIndex;
+
+                // Normalize angle to [0,360)
+                const normAngle = normalizeAngle(angle);
+
+                // Show only images on right half circle (angle between 0 and 180)
+                const isVisible = normAngle >= 0 && normAngle <= 360;
+
+                return (
+                  <img
+                    key={attraction.id}
+                    src={attraction.image}
+                    alt={attraction.title}
+                    className={`absolute rounded-full object-cover shadow-md transition-all duration-500 cursor-pointer select-none ${
+                      isActive ? 'z-30 border-4 border-blue-500' : 'opacity-70'
+                    }`}
+                    style={{
+                      width: isActive ? sizeActive : sizeInactive,
+                      height: isActive ? sizeActive : sizeInactive,
+                      top: `calc(50% + ${y}px)`,
+                      left: `calc(50% + ${x}px)`,
+                      transform: 'translate(-50%, -50%)',
+                      boxShadow: isActive
+                        ? '0 10px 20px rgba(59,130,246,0.5)'
+                        : 'none',
+                      opacity: isVisible ? 1 : 0,
+                      pointerEvents: isVisible ? 'auto' : 'none',
+                      transition: 'all 0.5s ease',
+                    }}
+                    onClick={() => setActiveIndex(index)}
+                    draggable={false}
+                  />
+                );
+              })}
+
+              
             </div>
-          ))}
+
+            {/* Buttons below circle */}
+            <div className="absolute top-93 left-11 flex justify-between w-110 mt-4 px-4">
+              <button
+                onClick={rotateLeft}
+                aria-label="Rotate left"
+                className="bg-white rounded-full shadow-lg p-3 hover:bg-blue-50 transition select-none"
+              >
+                &#9664;
+              </button>
+              <button
+                onClick={rotateRight}
+                aria-label="Rotate right"
+                className="bg-white rounded-full shadow-lg p-3 hover:bg-blue-50 transition select-none"
+              >
+                &#9654;
+              </button>
+            </div>
+          </div>
+
+          {/* Text description on the right */}
+          <div className="max-w-md bg-white rounded-lg shadow-lg p-6 ml-12 flex-shrink-0">
+            <h3 className="text-xl font-bold mb-4 text-blue-700">
+              {attractions[activeIndex].title}
+            </h3>
+            <ul className="list-disc list-inside space-y-2 text-gray-700">
+              {attractions[activeIndex].features.map((feature, i) => (
+                <li key={i}>{feature}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
