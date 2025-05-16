@@ -1,19 +1,70 @@
-// Định nghĩa routes cho quản lý phản hồi
-
 const express = require('express');
 const router = express.Router();
-const feedbackController = require('../controllers/feedback.controller');
+const controller = require('../controllers/feedback.controller');
 
-// Route để lấy danh sách phản hồi
-router.get('/', feedbackController.getAllFeedback);
+/**
+ * @swagger
+ * tags:
+ *   name: Feedbacks
+ *   description: Góp ý từ khách hàng
+ */
 
-// Route để tạo phản hồi mới
-router.post('/', feedbackController.createFeedback);
+router.get('/', controller.getAllFeedbacks);
 
-// Route để cập nhật phản hồi
-router.put('/:id', feedbackController.updateFeedback);
+/**
+ * @swagger
+ * /feedbacks/recent:
+ *   get:
+ *     summary: Lấy 5 phản hồi mới nhất cho dashboard
+ *     tags: [Feedbacks]
+ *     responses:
+ *       200:
+ *         description: Danh sách phản hồi
+ */
+router.get('/recent', controller.getRecentFeedbacks);
 
-// Route để xóa phản hồi
-router.delete('/:id', feedbackController.deleteFeedback);
+/**
+ * @swagger
+ * /feedbacks:
+ *   post:
+ *     summary: Gửi phản hồi mới
+ *     tags: [Feedbacks]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [guest_id, room_id, comment]
+ *             properties:
+ *               guest_id:
+ *                 type: integer
+ *               room_id:
+ *                 type: integer
+ *               comment:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Tạo thành công
+ */
+router.post('/', controller.createFeedback);
+
+/**
+ * @swagger
+ * /feedbacks/{id}:
+ *   delete:
+ *     summary: Xoá phản hồi theo ID
+ *     tags: [Feedbacks]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       204:
+ *         description: Xoá thành công
+ */
+router.delete('/:id', controller.deleteFeedback);
 
 module.exports = router;
