@@ -52,15 +52,6 @@ const Feedback = sequelize.define('Feedback', {
                          // tới cột `created_at` trong database của bạn.
 });
 
-// Sau khi bạn đã định nghĩa các Model Guest và Room, bạn sẽ thiết lập mối quan hệ ở đây:
-// Ví dụ:
-// const Guest = require('./Guest.model'); // Giả sử Guest model đã được định nghĩa
-// Feedback.belongsTo(Guest, { foreignKey: 'guest_id', as: 'guest' });
-// Guest.hasMany(Feedback, { foreignKey: 'guest_id', as: 'feedbacks' });
 
-// Tương tự cho Room nếu bạn có Room model:
-// const Room = require('./Room.model');
-// Feedback.belongsTo(Room, { foreignKey: 'room_id', as: 'room' });
-// Room.hasMany(Feedback, { foreignKey: 'room_id', as: 'feedbacks' });
 
 module.exports = Feedback;

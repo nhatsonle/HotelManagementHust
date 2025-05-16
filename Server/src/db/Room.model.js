@@ -27,10 +27,8 @@ const Room = sequelize.define('Room', {
     allowNull: true
   },
   room_status: {
-    // QUAN TRỌNG: Thay thế các giá trị 'available', 'occupied', 'maintenance'
-    // bằng các giá trị thực tế có trong kiểu ENUM 'public.room_status_enum' của bạn.
-    // Ví dụ: type: DataTypes.ENUM('Trống', 'Có khách', 'Đang sửa chữa', 'Đang dọn dẹp'),
-    type: DataTypes.ENUM('Available', 'Booked', 'Maintenance', 'Reserved'), // <-- THAY THẾ CÁC GIÁ TRỊ ENUM NÀY!
+    
+    type: DataTypes.ENUM('Available', 'Booked', 'Maintenance', 'Reserved'), 
     allowNull: true
   },
   type_id: {
@@ -51,10 +49,7 @@ const Room = sequelize.define('Room', {
   timestamps: false       // **RẤT QUAN TRỌNG**: Bảng của bạn không có cột createdAt và updatedAt
 });
 
-// Sau này, bạn sẽ định nghĩa mối quan hệ với Model RoomType
-// const RoomType = require('./RoomType.model.js'); // Giả sử
-// Room.belongsTo(RoomType, { foreignKey: 'type_id', as: 'roomType' });
-// RoomType.hasMany(Room, { foreignKey: 'type_id', as: 'rooms' });
+
 
 
 module.exports = Room;
