@@ -63,36 +63,66 @@
  *         adult_number: 2
  *         child_number: 1
  * 
- *     RoomStatus:
+ *     RoomResponse:
  *       type: object
- *       required:
- *         - room_status
  *       properties:
- *         room_status:
- *           type: string
- *           enum: [Available, Booked, Reserved, Cleaning, Maintenance]
- *           description: New status of the room
- *       example:
- *         room_status: "Booked"
+ *         success:
+ *           type: boolean
+ *           description: Whether the request was successful
+ *         data:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Room'
+ *         meta:
+ *           type: object
+ *           properties:
+ *             pagination:
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: integer
+ *                   description: Total number of records
+ *                 page:
+ *                   type: integer
+ *                   description: Current page number
+ *                 limit:
+ *                   type: integer
+ *                   description: Number of records per page
+ *                 totalPages:
+ *                   type: integer
+ *                   description: Total number of pages
+ *             filters:
+ *               type: object
+ *               description: Applied filters
+ *             sort:
+ *               type: string
+ *               description: Current sort field and direction
  * 
  *     RoomFilters:
  *       type: object
  *       properties:
- *         room_id:
+ *         page:
  *           type: integer
- *           description: Filter by room ID
+ *           minimum: 1
+ *           default: 1
+ *           description: Page number
+ *         limit:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *           description: Number of records per page
+ *         sort:
+ *           type: string
+ *           enum: [room_number, -room_number, room_floor, -room_floor, adult_number, -adult_number, child_number, -child_number]
+ *           default: -room_id
+ *           description: Sort field (prefix with - for descending)
  *         room_number:
  *           type: string
  *           description: Filter by exact room number
- *         room_number_like:
- *           type: string
- *           description: Filter by partial room number match
  *         bed_type:
  *           type: string
  *           description: Filter by bed type
- *         room_floor:
- *           type: integer
- *           description: Filter by floor number
  *         room_status:
  *           type: string
  *           enum: [Available, Booked, Reserved, Cleaning, Maintenance]
@@ -100,36 +130,42 @@
  *         type_id:
  *           type: integer
  *           description: Filter by room type ID
- *         facility_like:
- *           type: string
- *           description: Filter by partial facility match
+ *         floor_min:
+ *           type: integer
+ *           minimum: 1
+ *           description: Minimum floor number
+ *         floor_max:
+ *           type: integer
+ *           minimum: 1
+ *           description: Maximum floor number
  *         adult_min:
  *           type: integer
+ *           minimum: 1
  *           description: Minimum adult capacity
  *         adult_max:
  *           type: integer
+ *           minimum: 1
  *           description: Maximum adult capacity
  *         child_min:
  *           type: integer
+ *           minimum: 0
  *           description: Minimum child capacity
  *         child_max:
  *           type: integer
+ *           minimum: 0
  *           description: Maximum child capacity
- *         floor_gt:
- *           type: integer
- *           description: Filter rooms above this floor
- *         floor_lt:
- *           type: integer
- *           description: Filter rooms below this floor
- *         sort:
+ *         room_number_like:
  *           type: string
- *           description: Sort field (prefix with - for descending)
- *         limit:
- *           type: integer
- *           description: Number of records per page
- *         page:
- *           type: integer
- *           description: Page number
+ *           description: Filter by partial room number match
+ *         facility_like:
+ *           type: string
+ *           description: Filter by partial facility match
+ *         status_in:
+ *           type: string
+ *           description: Filter by multiple statuses (comma-separated)
+ *         type_id_in:
+ *           type: string
+ *           description: Filter by multiple type IDs (comma-separated)
  * 
  * @swagger
  * tags:
@@ -145,30 +181,37 @@
  *     tags: [Rooms]
  *     parameters:
  *       - in: query
- *         name: room_id
+ *         name: page
  *         schema:
  *           type: integer
- *         description: Filter by room ID
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of records per page
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [room_number, -room_number, room_floor, -room_floor, adult_number, -adult_number, child_number, -child_number]
+ *           default: -room_id
+ *         description: Sort field (prefix with - for descending)
  *       - in: query
  *         name: room_number
  *         schema:
  *           type: string
  *         description: Filter by exact room number
  *       - in: query
- *         name: room_number_like
- *         schema:
- *           type: string
- *         description: Filter by partial room number match
- *       - in: query
  *         name: bed_type
  *         schema:
  *           type: string
  *         description: Filter by bed type
- *       - in: query
- *         name: room_floor
- *         schema:
- *           type: integer
- *         description: Filter by floor number
  *       - in: query
  *         name: room_status
  *         schema:
@@ -181,64 +224,85 @@
  *           type: integer
  *         description: Filter by room type ID
  *       - in: query
- *         name: facility_like
+ *         name: floor_min
  *         schema:
- *           type: string
- *         description: Filter by partial facility match
+ *           type: integer
+ *           minimum: 1
+ *         description: Minimum floor number
+ *       - in: query
+ *         name: floor_max
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Maximum floor number
  *       - in: query
  *         name: adult_min
  *         schema:
  *           type: integer
+ *           minimum: 1
  *         description: Minimum adult capacity
  *       - in: query
  *         name: adult_max
  *         schema:
  *           type: integer
+ *           minimum: 1
  *         description: Maximum adult capacity
  *       - in: query
  *         name: child_min
  *         schema:
  *           type: integer
+ *           minimum: 0
  *         description: Minimum child capacity
  *       - in: query
  *         name: child_max
  *         schema:
  *           type: integer
+ *           minimum: 0
  *         description: Maximum child capacity
  *       - in: query
- *         name: floor_gt
- *         schema:
- *           type: integer
- *         description: Filter rooms above this floor
- *       - in: query
- *         name: floor_lt
- *         schema:
- *           type: integer
- *         description: Filter rooms below this floor
- *       - in: query
- *         name: sort
+ *         name: room_number_like
  *         schema:
  *           type: string
- *         description: Sort field (prefix with - for descending)
+ *         description: Filter by partial room number match
  *       - in: query
- *         name: limit
+ *         name: facility_like
  *         schema:
- *           type: integer
- *         description: Number of records per page
+ *           type: string
+ *         description: Filter by partial facility match
  *       - in: query
- *         name: page
+ *         name: status_in
  *         schema:
- *           type: integer
- *         description: Page number
+ *           type: string
+ *         description: Filter by multiple statuses (comma-separated)
+ *       - in: query
+ *         name: type_id_in
+ *         schema:
+ *           type: string
+ *         description: Filter by multiple type IDs (comma-separated)
  *     responses:
  *       200:
  *         description: The list of rooms
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Room'
+ *               $ref: '#/components/schemas/RoomResponse'
+ *       400:
+ *         description: Invalid query parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                     status:
+ *                       type: integer
  *   post:
  *     summary: Create a new room
  *     tags: [Rooms]
@@ -250,47 +314,92 @@
  *             $ref: '#/components/schemas/Room'
  *     responses:
  *       201:
- *         description: The room was successfully created
+ *         description: Room created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Room'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Room'
+ *                 message:
+ *                   type: string
+ *                   example: Room created successfully
  *       400:
  *         description: Invalid input data
- */
-
-/**
- * @swagger
- * /api/rooms/{id}:
- *   get:
- *     summary: Get a room by id
- *     tags: [Rooms]
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: integer
- *         required: true
- *         description: The room id
- *     responses:
- *       200:
- *         description: The room description by id
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Room'
- *       404:
- *         description: The room was not found
- *   put:
- *     summary: Update a room by id
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                     status:
+ *                       type: integer
+ * 
+ * /api/rooms/{id}:
+ *   get:
+ *     summary: Get a room by ID
  *     tags: [Rooms]
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: integer
+ *         description: Room ID
+ *     responses:
+ *       200:
+ *         description: Room details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Room'
+ *       404:
+ *         description: Room not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: Room not found
+ *                     status:
+ *                       type: integer
+ *                       example: 404
+ * 
+ *   put:
+ *     summary: Update a room
+ *     tags: [Rooms]
+ *     parameters:
+ *       - in: path
+ *         name: id
  *         required: true
- *         description: The room id
+ *         schema:
+ *           type: integer
+ *         description: Room ID
  *     requestBody:
  *       required: true
  *       content:
@@ -299,34 +408,52 @@
  *             $ref: '#/components/schemas/Room'
  *     responses:
  *       200:
- *         description: The room was updated
+ *         description: Room updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Room'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Room'
+ *                 message:
+ *                   type: string
+ *                   example: Room updated successfully
  *       404:
- *         description: The room was not found
+ *         description: Room not found
  *       400:
  *         description: Invalid input data
+ * 
  *   delete:
- *     summary: Delete a room by id
+ *     summary: Delete a room
  *     tags: [Rooms]
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
- *         description: The room id
+ *         description: Room ID
  *     responses:
- *       204:
- *         description: The room was deleted
+ *       200:
+ *         description: Room deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Room deleted successfully
  *       404:
- *         description: The room was not found
- */
-
-/**
- * @swagger
+ *         description: Room not found
+ * 
  * /api/rooms/{id}/status:
  *   patch:
  *     summary: Update room status
@@ -334,26 +461,35 @@
  *     parameters:
  *       - in: path
  *         name: id
+ *         required: true
  *         schema:
  *           type: integer
- *         required: true
- *         description: The room id
+ *         description: Room ID
  *       - in: query
  *         name: status
+ *         required: true
  *         schema:
  *           type: string
  *           enum: [Available, Booked, Reserved, Cleaning, Maintenance]
- *         required: true
- *         description: New status of the room
+ *         description: New room status
  *     responses:
  *       200:
- *         description: The room status was updated
+ *         description: Room status updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Room'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   $ref: '#/components/schemas/Room'
+ *                 message:
+ *                   type: string
+ *                   example: Room status updated successfully
  *       404:
- *         description: The room was not found
+ *         description: Room not found
  *       400:
- *         description: Invalid status value
+ *         description: Invalid status
  */ 

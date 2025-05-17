@@ -1,6 +1,8 @@
 // Chứa business logic chính của ứng dụng cho phòng
-const roomQueries = require('../db/room.queries');
+const BaseService = require('./base.service');
+const { Room, RoomType } = require('../db');
 const Joi = require('joi');
+const { Op } = require('sequelize');
 
 const ALLOWED_STATUS = ['Available', 'Booked', 'Reserved', 'Cleaning', 'Maintenance'];
 
@@ -16,99 +18,167 @@ const schema = Joi.object({
   child_number: Joi.number().integer().min(0).max(10).required()
 });
 
+// Filter validation schema
+const filterSchema = Joi.object({
+  // Pagination
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(10),
+  sort: Joi.string().valid('room_number', '-room_number', 'room_floor', '-room_floor', 'adult_number', '-adult_number', 'child_number', '-child_number').default('-room_id'),
+  
+  // Exact matches
+  room_number: Joi.string().trim(),
+  bed_type: Joi.string().trim(),
+  room_status: Joi.string().valid(...ALLOWED_STATUS),
+  type_id: Joi.number().integer().positive(),
+  
+  // Range filters
+  floor_min: Joi.number().integer().min(1),
+  floor_max: Joi.number().integer().min(1),
+  adult_min: Joi.number().integer().min(1),
+  adult_max: Joi.number().integer().min(1),
+  child_min: Joi.number().integer().min(0),
+  child_max: Joi.number().integer().min(0),
+  
+  // Like searches
+  room_number_like: Joi.string().trim(),
+  facility_like: Joi.string().trim(),
+  
+  // Multiple values
+  status_in: Joi.string().custom((value, helpers) => {
+    const statuses = value.split(',');
+    const invalid = statuses.find(s => !ALLOWED_STATUS.includes(s));
+    if (invalid) {
+      return helpers.error('any.invalid');
+    }
+    return value;
+  }),
+  type_id_in: Joi.string().custom((value, helpers) => {
+    const ids = value.split(',');
+    if (ids.some(id => isNaN(parseInt(id)))) {
+      return helpers.error('any.invalid');
+    }
+    return value;
+  })
+});
 
-exports.getRooms = async (query) => {
-  const filters = {
-    // so sánh bằng
-    equal: {},
-    // LIKE mờ
-    like: {},
-    // BETWEEN
-    range: {},
-    // lớn hơn
-    gt: {},
-    // nhỏ hơn
-    lt: {},
-    // sort + pagination
-    orderBy: null,
-    limit: 10,
-    offset: 0,
-  };
-
-  //  so sánh bằng 
-  ['room_id', 'room_number', 'bed_type', 'room_floor',
-   'room_status', 'type_id'].forEach((key) => {
-    if (query[key] !== undefined) filters.equal[key] = query[key];
-  });
-
-  //  tìm mờ 
-  if (query.room_number_like) filters.like.room_number = query.room_number_like;
-  if (query.facility_like)     filters.like.room_facility = query.facility_like;
-
-  //  BETWEEN 
-  if (query.adult_min || query.adult_max)
-    filters.range.adult_number = {
-      min: query.adult_min ?? 0,
-      max: query.adult_max ?? 99,
-    };
-  if (query.child_min || query.child_max)
-    filters.range.child_number = {
-      min: query.child_min ?? 0,
-      max: query.child_max ?? 99,
-    };
-  // ======= floor greater‑than =======
-  if (query.floor_gt !== undefined) {
-    const val = parseInt(query.floor_gt, 10);
-    if (Number.isNaN(val) || val < 0) throw new Error('Invalid floor_gt');
-    filters.gt.room_floor = val;  
-  }
-  // ======= floor less‑than =======
-  if (query.floor_lt !== undefined) {
-    const val = parseInt(query.floor_lt, 10);
-    if (Number.isNaN(val) || val < 0) throw new Error('Invalid floor_lt');
-    filters.lt.room_floor = val;         
+class RoomService extends BaseService {
+  constructor() {
+    super(Room);
   }
 
-  //  ORDER BY 
-  if (query.sort) {
-    const field = query.sort.startsWith('-')
-      ? query.sort.slice(1)
-      : query.sort;
-    const dir = query.sort.startsWith('-') ? 'DESC' : 'ASC';
-    filters.orderBy = { field, dir };
+  async getRooms(query = {}) {
+    // Validate and sanitize query parameters
+    const validatedQuery = await filterSchema.validateAsync(query);
+
+    const {
+      page,
+      limit,
+      sort,
+      ...filters
+    } = validatedQuery;
+
+    // Build where clause
+    const where = {};
+
+    // Handle exact matches
+    ['room_number', 'bed_type', 'room_status', 'type_id'].forEach(field => {
+      if (filters[field]) {
+        where[field] = filters[field];
+      }
+    });
+
+    // Handle range filters
+    if (filters.floor_min || filters.floor_max) {
+      where.room_floor = {
+        ...(filters.floor_min && { [Op.gte]: filters.floor_min }),
+        ...(filters.floor_max && { [Op.lte]: filters.floor_max })
+      };
+    }
+
+    if (filters.adult_min || filters.adult_max) {
+      where.adult_number = {
+        ...(filters.adult_min && { [Op.gte]: filters.adult_min }),
+        ...(filters.adult_max && { [Op.lte]: filters.adult_max })
+      };
+    }
+
+    if (filters.child_min || filters.child_max) {
+      where.child_number = {
+        ...(filters.child_min && { [Op.gte]: filters.child_min }),
+        ...(filters.child_max && { [Op.lte]: filters.child_max })
+      };
+    }
+
+    // Handle like searches
+    if (filters.room_number_like) {
+      where.room_number = { [Op.iLike]: `%${filters.room_number_like}%` };
+    }
+
+    if (filters.facility_like) {
+      where.room_facility = { [Op.iLike]: `%${filters.facility_like}%` };
+    }
+
+    // Handle multiple values
+    if (filters.status_in) {
+      where.room_status = { [Op.in]: filters.status_in.split(',') };
+    }
+
+    if (filters.type_id_in) {
+      where.type_id = { [Op.in]: filters.type_id_in.split(',').map(Number) };
+    }
+
+    // Build order clause
+    const [field, direction] = sort.startsWith('-') 
+      ? [sort.slice(1), 'DESC']
+      : [sort, 'ASC'];
+
+    // Calculate offset
+    const offset = (page - 1) * limit;
+
+    return await this.findAll({
+      where,
+      order: [[field, direction]],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
   }
 
-  //  pagination 
-  const limit = parseInt(query.limit, 10);
-  const page  = parseInt(query.page, 10) || 1;
-  if (!Number.isNaN(limit) && limit > 0) filters.limit = limit;
-  filters.offset = (page - 1) * filters.limit;
+  async getRoomById(id) {
+    return await this.findById(id, {
+      include: [{
+        model: RoomType,
+        as: 'roomType',
+        attributes: ['type_id', 'type_name', 'base_price', 'cancellation_policy']
+      }]
+    });
+  }
 
-  return roomQueries.getRooms(filters);
-};
+  async createRoom(roomData) {
+    const validatedData = await schema.validateAsync(roomData);
+    return await this.create(validatedData);
+  }
 
-exports.getRoomById = async (id) => {
-  return await roomQueries.getRoomById(id);
-};
+  async updateRoom(id, roomData) {
+    const validatedData = await schema.validateAsync(roomData);
+    return await this.update(id, validatedData);
+  }
 
-exports.createRoom = async (roomData) => {
-  const value = await schema.validateAsync(roomData);
-  return await roomQueries.createRoom(value);
-};
+  async updateRoomStatus(id, status) {
+    const validatedStatus = await Joi.string()
+      .valid(...ALLOWED_STATUS)
+      .required()
+      .validateAsync(status);
 
-exports.updateRoom = async (id, roomData) => {
-  const value = await schema.validateAsync(roomData);
-  return await roomQueries.updateRoom(id, value);
-};
+    return await this.update(id, { room_status: validatedStatus });
+  }
 
-exports.updateRoomStatus = async (id, status) => {
-  const value = await Joi.string().valid(...ALLOWED_STATUS).required().validateAsync(status);
-  return await roomQueries.updateRoomStatus(id, { room_status: value });
-};
+  async deleteRoom(id) {
+    return await this.delete(id);
+  }
 
-exports.deleteRoom = async (id) => {
-  return await roomQueries.deleteRoom(id);
-};
+}
+
+module.exports = new RoomService();
 
 
 

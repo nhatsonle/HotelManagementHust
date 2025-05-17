@@ -1,40 +1,107 @@
 // Xử lý logic request/response cho loại phòng
 const roomTypeService = require('../services/roomType.service');
 
-exports.getRoomTypes = async (req, res, next) => {
-  try {
-    const list = await roomTypeService.getRoomTypes();
-    res.status(200).json(list);
-  } catch (err) { next(err); }
+// Helper function to handle errors
+const handleError = (error, res) => {
+  if (error.isJoi) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        message: error.details[0].message,
+        status: 400
+      }
+    });
+  }
+
+  if (error.message === 'Room type not found') {
+    return res.status(404).json({
+      success: false,
+      error: {
+        message: error.message,
+        status: 404
+      }
+    });
+  }
+
+  return res.status(500).json({
+    success: false,
+    error: {
+      message: 'Something went wrong!',
+      status: 500
+    }
+  });
 };
 
-exports.getRoomTypeById = async (req, res, next) => {
-  try {
-    const item = await roomTypeService.getRoomTypeById(req.params.id);
-    if (!item) return res.status(404).json({ message: 'RoomType not found' });
-    res.status(200).json(item);
-  } catch (err) { next(err); }
-};
+class RoomTypeController {
+  async getRoomTypes(req, res) {
+    try {
+      const result = await roomTypeService.getRoomTypes(req.query);
+      
+      // Build applied filters object (excluding pagination and sorting)
+      const { page, limit, sort, ...appliedFilters } = req.query;
+      
+      return res.json({
+        success: true,
+        data: result.data,
+        meta: {
+          ...result.meta,
+          filters: appliedFilters
+        }
+      });
+    } catch (error) {
+      handleError(error, res);
+    }
+  }
 
-exports.createRoomType = async (req, res, next) => {
-  try {
-    const created = await roomTypeService.createRoomType(req.body);
-    res.status(201).json(created);
-  } catch (err) { next(err); }
-};
+  async getRoomTypeById(req, res) {
+    try {
+      const roomType = await roomTypeService.getRoomTypeById(req.params.id);
+      return res.json({
+        success: true,
+        data: roomType
+      });
+    } catch (error) {
+      handleError(error, res);
+    }
+  }
 
-exports.updateRoomType = async (req, res, next) => {
-  try {
-    const updated = await roomTypeService.updateRoomType(req.params.id, req.body);
-    if (!updated) return res.status(404).json({ message: 'RoomType not found' });
-    res.status(200).json(updated);
-  } catch (err) { next(err); }
-};
+  async createRoomType(req, res) {
+    try {
+      const roomType = await roomTypeService.createRoomType(req.body);
+      return res.status(201).json({
+        success: true,
+        data: roomType,
+        message: 'Room type created successfully'
+      });
+    } catch (error) {
+      handleError(error, res);
+    }
+  }
 
-exports.deleteRoomType = async (req, res, next) => {
-  try {
-    const ok = await roomTypeService.deleteRoomType(req.params.id);
-    if (!ok) return res.status(404).json({ message: 'RoomType not found' });
-    res.status(204).send();
-  } catch (err) { next(err); }
-};
+  async updateRoomType(req, res) {
+    try {
+      const roomType = await roomTypeService.updateRoomType(req.params.id, req.body);
+      return res.json({
+        success: true,
+        data: roomType,
+        message: 'Room type updated successfully'
+      });
+    } catch (error) {
+      handleError(error, res);
+    }
+  }
+
+  async deleteRoomType(req, res) {
+    try {
+      await roomTypeService.deleteRoomType(req.params.id);
+      return res.json({
+        success: true,
+        message: 'Room type deleted successfully'
+      });
+    } catch (error) {
+      handleError(error, res);
+    }
+  }
+}
+
+module.exports = new RoomTypeController();
