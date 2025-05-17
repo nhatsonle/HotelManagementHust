@@ -107,14 +107,14 @@ export default function AttractionsCircle() {
               <button
                 onClick={rotateLeft}
                 aria-label="Rotate left"
-                className="bg-white rounded-full shadow-lg p-3 hover:bg-blue-50 transition select-none"
+                className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full shadow-lg p-3 hover:bg-blue-50 transition select-none"
               >
                 &#9664;
               </button>
               <button
                 onClick={rotateRight}
                 aria-label="Rotate right"
-                className="bg-white rounded-full shadow-lg p-3 hover:bg-blue-50 transition select-none"
+                className=" absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full shadow-lg p-3 hover:bg-blue-50 transition select-none"
               >
                 &#9654;
               </button>
@@ -122,11 +122,11 @@ export default function AttractionsCircle() {
           </div>
 
           {/* Text description on the right */}
-          <div className="max-w-md bg-white rounded-lg shadow-lg p-6 ml-12 flex-shrink-0">
-            <h3 className="text-xl font-bold mb-4 text-blue-700">
+          <div className="w-[700px] bg-white rounded-lg shadow-lg p-8 ml-12 flex-shrink-0">
+            <h3 className="text-2xl font-bold mb-4 text-blue-700">
               {attractions[activeIndex].title}
             </h3>
-            <ul className="list-disc list-inside space-y-2 text-gray-700">
+            <ul className="list-disc list-inside space-y-3 text-blue-700 text-lg">
               {attractions[activeIndex].features.map((feature, i) => (
                 <li key={i}>{feature}</li>
               ))}
