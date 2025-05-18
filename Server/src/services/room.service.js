@@ -139,7 +139,12 @@ class RoomService extends BaseService {
       where,
       order: [[field, direction]],
       limit: parseInt(limit),
-      offset: parseInt(offset)
+      offset: parseInt(offset),
+      include: [{
+        model: RoomType,
+        as: 'roomType',
+        attributes: ['type_id', 'type_name', 'base_price', 'cancellation_policy']
+      }]
     });
   }
 
