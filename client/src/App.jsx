@@ -7,6 +7,7 @@ import BookingSection from './components/features/home/BookingSection';
 import FeaturesSection from './components/features/home/FeaturesSection';
 import StorySection from './components/features/home/StorySection';
 import AboutUsSection from './components/features/about/AboutUs';
+import Rooms from './components/features/rooms/Rooms';
 import Dining from './components/features/dining/Dining';
 import Sport from './components/features/sports/Sport';
 import Services from './components/features/service/Services';
@@ -23,12 +24,12 @@ function App() {
             <HeroSection heroImage={heroImage} />
             <BookingSection />
             <StorySection />
-            <FeaturesSection />  
+            <FeaturesSection />
           </>
         } />
         <Route path="/about" element={<AboutUsSection />} />
-        <Route path="/rooms" element={<div>Rooms Page</div>} />
-        <Route path="/pricing" element={<div>Pricing Page</div>} />
+        <Route path="/rooms" element={<Rooms />} />
+        <Route path="/pricing" element={<div>Pricing</div>} />
         <Route path="/dining" element={<Dining />} />
         <Route path='/sports' element={<Sport />} />
         <Route path='/services' element={<Services />} />
