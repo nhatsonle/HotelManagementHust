@@ -11,7 +11,7 @@ const port = 3000;
 const mainRoutes = require('./src/api/main.routes'); // Đường dẫn đến file mainRoutes.js
 const guestRoutes = require('./src/api/guest.routes'); // Đường dẫn đến file userRoutes.js
 const { connectDB } = require('./src/config/db.config'); // Đường dẫn đến file database.js
-
+const bookingRoutes = require('./src/api/booking.routes'); // Đường dẫn đến file bookingRoutes.js
 
 connectDB();
 
@@ -107,7 +107,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // ----- ROUTES ----- (đảm bảo đã require và use các route của bạn)
 app.use('/', mainRoutes);
 app.use('/api/guests', guestRoutes);
-
+app.use('/api/bookings', bookingRoutes);
 
 // ----- ERROR HANDLING MIDDLEWARE (NẾU CÓ) -----
 // ...

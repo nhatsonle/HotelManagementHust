@@ -1,16 +1,14 @@
-// Định nghĩa routes cho quản lý đặt phòng
-
+// routes/bookingRoutes.js
 const express = require('express');
 const router = express.Router();
+const bookingController = require('../controllers/booking.controller');
 
-// Import các controller cần thiết
-const bookingController = require('./booking.controller');
+router.post('/initiate', bookingController.initiateBooking); // API để tìm phòng và giữ chỗ
+router.patch('/:bookingId/cancel', bookingController.cancelBooking); // API hủy booking đang chờ
+router.patch('/:bookingId/confirm', bookingController.confirmBooking); // API xác nhận sau thanh toán
 
-// Định nghĩa các routes
-router.post('/create', bookingController.createBooking);
-router.get('/list', bookingController.listBookings);
-router.get('/:id', bookingController.getBookingById);
-router.put('/:id', bookingController.updateBooking);
-router.delete('/:id', bookingController.deleteBooking);
+// Bạn có thể thêm các route khác như lấy danh sách booking, lấy chi tiết booking sau
+// router.get('/', bookingController.getAllBookings);
+// router.get('/:bookingId', bookingController.getBookingById);
 
 module.exports = router;

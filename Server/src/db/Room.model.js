@@ -28,7 +28,7 @@ const Room = sequelize.define('Room', {
   },
   room_status: {
     
-    type: DataTypes.ENUM('Available', 'Booked', 'Maintenance', 'Reserved'), 
+    type: DataTypes.ENUM('Available', 'Booked', 'Maintenance', 'Reserved','Cleaning'), 
     allowNull: true
   },
   type_id: {

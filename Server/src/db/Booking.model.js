@@ -39,7 +39,7 @@ const Booking = sequelize.define('Booking', {
     // QUAN TRỌNG: Thay thế các giá trị 'pending', 'confirmed', 'cancelled'
     // bằng các giá trị thực tế có trong kiểu ENUM 'public.booking_status_enum' của bạn.
     // Ví dụ: type: DataTypes.ENUM('Chờ xác nhận', 'Đã xác nhận', 'Đã hủy', 'Hoàn thành'),
-    type: DataTypes.ENUM('Confirmed', 'Cancelled', 'Pending', 'Awaiting-Payment'), // <-- THAY THẾ CÁC GIÁ TRỊ ENUM NÀY!
+    type: DataTypes.ENUM('Booked', 'Cancelled', 'Awaiting-Payment'), // <-- THAY THẾ CÁC GIÁ TRỊ ENUM NÀY!
     allowNull: true
   },
   created_at: {
@@ -53,7 +53,16 @@ const Booking = sequelize.define('Booking', {
     defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
     // Trigger 'trigger_bookings_updated_at' trong DB sẽ đảm bảo cột này được cập nhật.
     // Sequelize cũng sẽ cố gắng cập nhật nó khi `timestamps: true`.
-  }
+  },
+  num_adults: {
+    type: DataTypes.SMALLINT,
+    allowNull: true
+  },
+  num_children: {
+    type: DataTypes.SMALLINT,
+    allowNull: true
+  },
+  
 }, {
   tableName: 'bookings', // Tên bảng chính xác trong PostgreSQL
   timestamps: true,      // Bảng của bạn có cả created_at và updated_at
