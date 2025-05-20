@@ -1,16 +1,14 @@
-// Định nghĩa routes cho quản lý khách hàng
-
+// routes/guestRoutes.js
 const express = require('express');
 const router = express.Router();
+const guestController = require('../controllers/guest.controller'); // Nạp controller
 
-// Import controller
-const guestController = require('./guest.controller');
-
-// Routes
+// Định nghĩa các routes và gắn chúng với các phương thức trong controller
 router.get('/', guestController.getAllGuests);
-router.get('/:id', guestController.getGuestById);
 router.post('/', guestController.createGuest);
-router.put('/:id', guestController.updateGuest);
-router.delete('/:id', guestController.deleteGuest);
+router.get('/:guestId', guestController.getGuestById);
+router.put('/:guestId', guestController.updateGuest);
+router.patch('/:guestId', guestController.patchGuest); // Có thể dùng chung hàm update hoặc tạo hàm riêng cho PATCH
+router.delete('/:guestId', guestController.deleteGuest);
 
 module.exports = router;
