@@ -12,6 +12,7 @@ import Sport from './components/features/sports/Sport';
 import Services from './components/features/service/Services';
 import Attractions from './components/features/attractions/Attractions';
 import GuestInfoForm from './components/features/home/GuestInfoForm';
+import BookingSummary from './components/features/home/BookingSummary';
 import heroImage from './assets/images/herosection.png';
 
 function App() {
@@ -35,6 +36,7 @@ function App() {
         <Route path='/services' element={<Services />} />
         <Route path='/attractions' element={<Attractions />} />
         <Route path='/guest-info' element={<GuestInfoForm />} />
+        <Route path='/booking-summary' element={<BookingSummary />} />
       </Routes>
       <Footer />
     </Router>

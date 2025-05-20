@@ -1,15 +1,65 @@
-import React from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import BookingSummary from './BookingSummary';
 
 function GuestInfoForm() {
   // Get state passed from BookingSection
   const location = useLocation();
+  const navigate = useNavigate();
   const { checkInDate, checkOutDate, numAdults, numChildren } = location.state || {};
+  const [guestInfo, setGuestInfo] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    passportNumber: '',
+    city: '',
+    region: '',
+    address: '',
+    zipcode: ''
+  });
+  const [bookingData, setBookingData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error , setError] = useState(null);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setGuestInfo(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await axios.post('/api/bookings/inititate', {
+        check_in_date: checkInDate,
+        check_out_date: checkOutDate,
+        num_adults: numAdults,
+        num_children: numChildren,
+        guest_info: guestInfo,
+      });
+      if (response.status === 201) {
+        const { booking, room_info } = response.data;
+        setBookingData({ booking, room_info });
+        setIsLoading(true); // keep loading for next page
+        navigate('/booking-summary', { state: { booking, room_info } });
+        return;
+      } else {
+        setError('Unexpected response from server.');
+        setIsLoading(false);
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'An error occurred';
+      setError(msg);
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 py-12 font-body">
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-8 max-w-2xl mx-auto">
-        <h2 className="text-2xl font-header text-center mb-2 font-bold">Guest Information</h2>
+        <h2 className="text-2xl font-header text-center pt-5 mb-2 font-bold">Guest Information</h2>
         <div className="mb-6">
           <div className="flex flex-wrap gap-4 justify-center text-lg">
             <div><strong>Check-in:</strong> {checkInDate || '-'}</div>
@@ -18,41 +68,47 @@ function GuestInfoForm() {
             <div><strong>Children:</strong> {numChildren || '-'}</div>
           </div>
         </div>
-        <form className="space-y-4">
+        {error && <div className="text-red-600 mb-4 text-center">{error}</div>}
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Full Name</label>
-            <input type="text" className="border rounded-lg p-2 w-full" required />
+            <input name="fullName" type="text" className="border rounded-lg p-2 w-full" required value={guestInfo.fullName} onChange={handleChange} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Email</label>
-            <input type="email" className="border rounded-lg p-2 w-full" required />
+            <input name="email" type="email" className="border rounded-lg p-2 w-full" required value={guestInfo.email} onChange={handleChange} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Phone Number</label>
-            <input type="tel" className="border rounded-lg p-2 w-full" required />
+            <input name="phone" type="tel" className="border rounded-lg p-2 w-full" required value={guestInfo.phone} onChange={handleChange} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Passport Number</label>
-            <input type="text" className="border rounded-lg p-2 w-full" required />
+            <input name="passportNumber" type="text" className="border rounded-lg p-2 w-full" required value={guestInfo.passportNumber} onChange={handleChange} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">City</label>
-            <input type="text" className="border rounded-lg p-2 w-full" required />
+            <input name="city" type="text" className="border rounded-lg p-2 w-full" required value={guestInfo.city} onChange={handleChange} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Region</label>
-            <input type="text" className="border rounded-lg p-2 w-full" required />
+            <input name="region" type="text" className="border rounded-lg p-2 w-full" required value={guestInfo.region} onChange={handleChange} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Address</label>
-            <input type="text" className="border rounded-lg p-2 w-full" required />
+            <input name="address" type="text" className="border rounded-lg p-2 w-full" required value={guestInfo.address} onChange={handleChange} />
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">Zipcode</label>
-            <input type="text" className="border rounded-lg p-2 w-full" required />
+            <input name="zipcode" type="text" className="border rounded-lg p-2 w-full" required value={guestInfo.zipcode} onChange={handleChange} />
           </div>
-          <button type="submit" className="bg-blue-600 text-white rounded-lg p-2 w-full font-header font-bold hover:bg-blue-700 transition-colors">Submit</button>
+          <button type="submit" className="bg-blue-600 text-white rounded-lg p-2 w-full font-header font-bold hover:bg-blue-700 transition-colors" disabled={isLoading}>
+            {isLoading ? 'Submitting...' : 'Submit'}
+          </button>
         </form>
+        {bookingData && (
+          <div className="mt-6 text-green-700 text-center">Booking initiated successfully!</div>
+        )}
       </div>
     </div>
   );
