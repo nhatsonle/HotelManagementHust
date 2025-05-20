@@ -18,8 +18,20 @@ function BookingSection() {
   const [checkOutDate, setCheckOutDate] = useState(null);
   const [numAdults, setNumAdults] = useState('0');
   const [numChildren, setNumChildren] = useState('0');
+  const [typeOfRoom, setTypeOfRoom] = useState('Standard');
+  const [room_type_id, setRoomID] = useState(1); // Assuming you want to set this later
   const navigate = useNavigate();
-
+  function handleRoomIDMapping(typeOfRoom) {
+    if(typeOfRoom === 'Standard') {
+      setRoomID(1);
+    }
+    else if(typeOfRoom === 'Deluxe') {
+      setRoomID(2);
+    }
+    else if(typeOfRoom === 'Suite') {
+      setRoomID(3);
+    }
+  }
   const handleSubmit = (e) => {
     e.preventDefault();
     navigate('/guest-info', {
@@ -27,7 +39,8 @@ function BookingSection() {
         checkInDate: formatDate(checkInDate),
         checkOutDate: formatDate(checkOutDate),
         numAdults,
-        numChildren
+        numChildren,
+        room_type_id
       }
     });
   };
@@ -37,7 +50,7 @@ function BookingSection() {
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg p-8 max-w-5xl mx-auto">
         <h2 className="text-2xl font-header text-center mb-2 font-bold">Book a Room</h2>
         <p className="text-gray-600 text-center mb-6">Discover the perfect space for you!</p>
-        <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end" onSubmit={handleSubmit}>
+        <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-5 items-end" onSubmit={handleSubmit}>
           <div className="flex flex-col w-full">
             <label className="text-sm text-gray-600 mb-1">Check-in date</label>
             <DatePicker
@@ -46,6 +59,7 @@ function BookingSection() {
               dateFormat="yyyy-MM-dd"
               className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
               placeholderText="yyyy-MM-dd"
+              minDate={new Date()}
             />
           </div>
           <div className="flex flex-col w-full">
@@ -56,6 +70,7 @@ function BookingSection() {
               dateFormat="yyyy-MM-dd"
               className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
               placeholderText="yyyy-MM-dd"
+              minDate={new Date()}
             />
           </div>
           <div className="flex flex-col w-full">
@@ -83,6 +98,20 @@ function BookingSection() {
               <option value="2">2</option>
               <option value="3">3</option>
               <option value="4">4</option>
+            </select>
+          </div>
+          <div className="flex flex-col w-full">
+            <label className="text-sm text-gray-600 mb-1">Type of Room</label>
+            <select 
+              className="border rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
+              value={typeOfRoom}
+              onChange={e => {setTypeOfRoom(e.target.value)
+                handleRoomIDMapping(e.target.value)
+              }}
+            >
+              <option value="Standard">Standard</option>
+              <option value="Deluxe">Deluxe</option>
+              <option value="Suite">Suite</option>
             </select>
           </div>
           <button 

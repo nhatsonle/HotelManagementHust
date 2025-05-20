@@ -7,7 +7,7 @@ function GuestInfoForm() {
   // Get state passed from BookingSection
   const location = useLocation();
   const navigate = useNavigate();
-  const { checkInDate, checkOutDate, numAdults, numChildren } = location.state || {};
+  const { checkInDate, checkOutDate, numAdults, numChildren, room_type_id} = location.state || {};
   const [guestInfo, setGuestInfo] = useState({
     fullName: '',
     email: '',
@@ -32,12 +32,15 @@ function GuestInfoForm() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await axios.post('/api/bookings/inititate', {
+      const guestPayload = { ...guestInfo, name: guestInfo.fullName };
+      delete guestPayload.fullName;
+      const response = await axios.post('http://localhost:3000/api/bookings/initiate', {
         check_in_date: checkInDate,
         check_out_date: checkOutDate,
-        num_adults: numAdults,
-        num_children: numChildren,
-        guest_info: guestInfo,
+        num_adults: Number(numAdults),
+        num_children: Number(numChildren),
+        room_type_id : Number(room_type_id),
+        guest_info: guestPayload,
       });
       if (response.status === 201) {
         const { booking, room_info } = response.data;
@@ -66,6 +69,7 @@ function GuestInfoForm() {
             <div><strong>Check-out:</strong> {checkOutDate || '-'}</div>
             <div><strong>Adults:</strong> {numAdults || '-'}</div>
             <div><strong>Children:</strong> {numChildren || '-'}</div>
+            <div><strong>Room ID:</strong> {room_type_id || '-'}</div>
           </div>
         </div>
         {error && <div className="text-red-600 mb-4 text-center">{error}</div>}

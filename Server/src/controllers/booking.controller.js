@@ -5,6 +5,7 @@ const { sequelize, Guest, Booking, Room, RoomType, Feedback } // Nạp tất c�
 
 const bookingController = {
   initiateBooking: async (req, res, next) => {
+    console.log('Booking request:', req.body); // Debug thông tin đầu vào
     const t = await sequelize.transaction(); // Bắt đầu một transaction
     try {
       const {
@@ -15,7 +16,7 @@ const bookingController = {
         guest_info, // { name, email, phone, ... }
         room_type_id // Tùy chọn: ID của loại phòng khách muốn
       } = req.body;
-
+      
       // ----- 1. Xác thực đầu vào cơ bản -----
       if (!check_in_date || !check_out_date || num_adults === undefined || num_children === undefined || !guest_info || !guest_info.email || !guest_info.name) {
         await t.rollback();
@@ -143,7 +144,8 @@ const bookingController = {
       }, { transaction: t });
 
       await t.commit(); // Hoàn tất transaction
-      
+      console.log('Total amount:', total_amount);
+
       // Trả về thông tin booking và phòng (tùy chọn)
       res.status(201).json({
         message: 'Đã giữ phòng thành công! Vui lòng tiến hành thanh toán.',
@@ -151,9 +153,10 @@ const bookingController = {
         room_info: { // Thông tin phòng cơ bản để client hiển thị
           room_number: selectedRoom.room_number,
           bed_type: selectedRoom.bed_type,
+          base_price_per_night: roomType.base_price,
           room_facility: selectedRoom.room_facility,
           type_name: roomType.type_name, // Lấy từ roomType
-          base_price_per_night: roomType.base_price
+          total_amount: total_amount
         }
       });
 
