@@ -18,6 +18,40 @@ const guestController = require('../controllers/guest.controller');
  *     responses:
  *       200:
  *         description: Trả về danh sách khách
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   guest_id:
+ *                     type: integer
+ *                     description: ID của khách hàng
+ *                   name:
+ *                     type: string
+ *                     description: Tên khách hàng
+ *                   passport_number:
+ *                     type: string
+ *                     description: Số hộ chiếu
+ *                   phone:
+ *                     type: string
+ *                     description: Số điện thoại
+ *                   email:
+ *                     type: string
+ *                     description: Địa chỉ email
+ *                   city:
+ *                     type: string
+ *                     description: Thành phố
+ *                   region:
+ *                     type: string
+ *                     description: Khu vực
+ *                   address:
+ *                     type: string
+ *                     description: Địa chỉ chi tiết
+ *                   zip_code:
+ *                     type: string
+ *                     description: Mã bưu điện
  */
 router.get('/', guestController.getAllGuests);
 
@@ -33,9 +67,42 @@ router.get('/', guestController.getAllGuests);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: ID của khách hàng
  *     responses:
  *       200:
  *         description: Thông tin khách hàng
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 guest_id:
+ *                   type: integer
+ *                   description: ID của khách hàng
+ *                 name:
+ *                   type: string
+ *                   description: Tên khách hàng
+ *                 passport_number:
+ *                   type: string
+ *                   description: Số hộ chiếu
+ *                 phone:
+ *                   type: string
+ *                   description: Số điện thoại
+ *                 email:
+ *                   type: string
+ *                   description: Địa chỉ email
+ *                 city:
+ *                   type: string
+ *                   description: Thành phố
+ *                 region:
+ *                   type: string
+ *                   description: Khu vực
+ *                 address:
+ *                   type: string
+ *                   description: Địa chỉ chi tiết
+ *                 zip_code:
+ *                   type: string
+ *                   description: Mã bưu điện
  *       404:
  *         description: Không tìm thấy khách
  */
@@ -60,13 +127,63 @@ router.get('/:id', guestController.getGuestById);
  *             properties:
  *               name:
  *                 type: string
+ *                 description: Tên khách hàng
+ *               passport_number:
+ *                 type: string
+ *                 description: Số hộ chiếu
  *               phone:
  *                 type: string
+ *                 description: Số điện thoại
  *               email:
  *                 type: string
+ *                 description: Địa chỉ email
+ *               city:
+ *                 type: string
+ *                 description: Thành phố
+ *               region:
+ *                 type: string
+ *                 description: Khu vực
+ *               address:
+ *                 type: string
+ *                 description: Địa chỉ chi tiết
+ *               zip_code:
+ *                 type: string
+ *                 description: Mã bưu điện
  *     responses:
  *       201:
  *         description: Tạo thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 guest_id:
+ *                   type: integer
+ *                   description: ID của khách hàng
+ *                 name:
+ *                   type: string
+ *                   description: Tên khách hàng
+ *                 passport_number:
+ *                   type: string
+ *                   description: Số hộ chiếu
+ *                 phone:
+ *                   type: string
+ *                   description: Số điện thoại
+ *                 email:
+ *                   type: string
+ *                   description: Địa chỉ email
+ *                 city:
+ *                   type: string
+ *                   description: Thành phố
+ *                 region:
+ *                   type: string
+ *                   description: Khu vực
+ *                 address:
+ *                   type: string
+ *                   description: Địa chỉ chi tiết
+ *                 zip_code:
+ *                   type: string
+ *                   description: Mã bưu điện
  */
 router.post('/', guestController.createGuest);
 
@@ -82,6 +199,7 @@ router.post('/', guestController.createGuest);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: ID của khách hàng
  *     requestBody:
  *       required: true
  *       content:
@@ -91,13 +209,63 @@ router.post('/', guestController.createGuest);
  *             properties:
  *               name:
  *                 type: string
+ *                 description: Tên khách hàng
+ *               passport_number:
+ *                 type: string
+ *                 description: Số hộ chiếu
  *               phone:
  *                 type: string
+ *                 description: Số điện thoại
  *               email:
  *                 type: string
+ *                 description: Địa chỉ email
+ *               city:
+ *                 type: string
+ *                 description: Thành phố
+ *               region:
+ *                 type: string
+ *                 description: Khu vực
+ *               address:
+ *                 type: string
+ *                 description: Địa chỉ chi tiết
+ *               zip_code:
+ *                 type: string
+ *                 description: Mã bưu điện
  *     responses:
  *       200:
  *         description: Cập nhật thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 guest_id:
+ *                   type: integer
+ *                   description: ID của khách hàng
+ *                 name:
+ *                   type: string
+ *                   description: Tên khách hàng
+ *                 passport_number:
+ *                   type: string
+ *                   description: Số hộ chiếu
+ *                 phone:
+ *                   type: string
+ *                   description: Số điện thoại
+ *                 email:
+ *                   type: string
+ *                   description: Địa chỉ email
+ *                 city:
+ *                   type: string
+ *                   description: Thành phố
+ *                 region:
+ *                   type: string
+ *                   description: Khu vực
+ *                 address:
+ *                   type: string
+ *                   description: Địa chỉ chi tiết
+ *                 zip_code:
+ *                   type: string
+ *                   description: Mã bưu điện
  *       404:
  *         description: Không tìm thấy khách
  */
@@ -107,7 +275,7 @@ router.put('/:id', guestController.updateGuest);
  * @swagger
  * /guests/{id}:
  *   delete:
- *     summary: Xoá khách hàng
+ *     summary: Xóa khách hàng
  *     tags: [Guests]
  *     parameters:
  *       - in: path
@@ -115,9 +283,10 @@ router.put('/:id', guestController.updateGuest);
  *         required: true
  *         schema:
  *           type: integer
+ *         description: ID của khách hàng
  *     responses:
  *       204:
- *         description: Xoá thành công
+ *         description: Xóa thành công
  *       404:
  *         description: Không tìm thấy khách
  */
