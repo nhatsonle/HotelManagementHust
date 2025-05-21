@@ -15,7 +15,7 @@
 
 - **Frontend**: React.js, Tailwind CSS
 - **Backend**: Node.js, Express.js
-- **Cơ sở dữ liệu**: MongoDB, PostgreSQL
+- **Cơ sở dữ liệu**: PostgreSQL
 - **Triển khai**: Vercel (Frontend), Render (Backend)
 
 
