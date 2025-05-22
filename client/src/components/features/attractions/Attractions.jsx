@@ -3,20 +3,48 @@ import { useState } from 'react';
 import { GrCaretNext } from "react-icons/gr";
 import { GrCaretPrevious } from "react-icons/gr";
 
-export default function Attractions() {
-  const [loadedImages, setLoadedImages] = useState({});
+export default function AttractionsCircle() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const total = 6;
+  const radius = 320; // radius of the circle for images
+  const sizeActive = 300; // size of active image
+  const sizeInactive = 200; // size of inactive images
+  const offsetX = -650; // shift entire circle container left
 
-  const handleImageLoad = (id) => {
-    setLoadedImages(prev => ({ ...prev, [id]: true }));
+  const rotateLeft = () => {
+    setActiveIndex((prev) => (prev - 1 + total) % total);
+  };
+
+  const rotateRight = () => {
+    setActiveIndex((prev) => (prev + 1) % total);
+  };
+
+  // Helper to normalize angle to [0, 360)
+  const normalizeAngle = (angle) => {
+    let a = angle % 360;
+    if (a < 0) a += 360;
+    return a;
+  };
+
+  // Active background style, with overlay for darkening
+  const activeBackgroundStyle = {
+    backgroundImage: `url(${attractions[activeIndex].image})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    filter: 'brightness(0.5)',
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    zIndex: -10,
+    transition: 'background-image 0.8s ease-in-out',
   };
 
   return (
-    <div className="pt-[72px] font-body">
-      <SubHeroSection 
-        title="Local Attractions" 
-        description="Discover the best attractions and activities around our hotel" 
-        image={attractions[0].image}
-      />
+    <>
+      {/* Background image */}
+      <div aria-hidden="true" style={activeBackgroundStyle} />
 
       <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-transparent font-sans max-w-full overflow-x-hidden relative z-10">
         <div className="flex flex-col md:flex-row items-center max-w-4xl w-full">
@@ -107,6 +135,6 @@ export default function Attractions() {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
