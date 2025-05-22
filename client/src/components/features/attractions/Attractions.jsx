@@ -1,6 +1,7 @@
 import attractions from '../../../data/attractions_data';
-import SubHeroSection from '@/components/ui/SubHeroSection';
 import { useState } from 'react';
+import { GrCaretNext } from "react-icons/gr";
+import { GrCaretPrevious } from "react-icons/gr";
 
 export default function Attractions() {
   const [loadedImages, setLoadedImages] = useState({});
@@ -75,20 +76,20 @@ export default function Attractions() {
             </div>
 
             {/* Buttons below circle */}
-            <div className="absolute top-93 left-11 flex justify-between w-110 mt-4 px-4">
+            <div className="absolute top-93 left-1 flex justify-between w-110 mt-4 px-4">
               <button
                 onClick={rotateLeft}
                 aria-label="Rotate left"
                 className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full shadow-lg p-3 hover:bg-blue-50 transition select-none"
               >
-                &#9664;
+                <GrCaretPrevious size={20} />
               </button>
               <button
                 onClick={rotateRight}
                 aria-label="Rotate right"
                 className=" absolute right-0 top-1/2 transform -translate-y-1/2 bg-blue rounded-full shadow-lg p-3 hover:bg-blue-50 transition select-none"
               >
-                &#9654;
+                <GrCaretNext size={20} />
               </button>
             </div>
           </div>
