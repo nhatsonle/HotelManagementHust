@@ -12,6 +12,7 @@ import Dining from './components/features/dining/Dining';
 import Sport from './components/features/sports/Sport';
 import Services from './components/features/service/Services';
 import Attractions from './components/features/attractions/Attractions';
+import CheckRates from './components/features/rates/CheckRates';
 import heroImage from './assets/images/herosection.png';
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
         <Route path='/sports' element={<Sport />} />
         <Route path='/services' element={<Services />} />
         <Route path='/attractions' element={<Attractions />} />
+        <Route path='/check-rates' element={<CheckRates />} />
       </Routes>
       <Footer />
     </Router>
