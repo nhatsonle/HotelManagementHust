@@ -15,3 +15,9 @@
   opacity: 0;
   display: none;
 }
+
+.datepicker-fullwidth,
+.datepicker-fullwidth > input {
+  width: 100% !important;
+  min-width: 0;
+}

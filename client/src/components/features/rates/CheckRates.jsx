@@ -2,6 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaCalendarAlt, FaUser, FaBed, FaFilter } from 'react-icons/fa';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { format, parseISO } from 'date-fns';
+
+function formatDateDMY(dateStr) {
+  const date = new Date(dateStr);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
 
 export default function CheckRates() {
   const [formData, setFormData] = useState({
@@ -25,7 +36,7 @@ export default function CheckRates() {
   const [roomTypes, setRoomTypes] = useState([]);
   const [cancellationPolicies, setCancellationPolicies] = useState([]);
 
-  // Refs for date inputs
+  // Refs for date pickers
   const checkInRef = useRef(null);
   const checkOutRef = useRef(null);
 
@@ -93,6 +104,20 @@ export default function CheckRates() {
     }
   };
 
+  // Helper to convert string to Date for react-datepicker
+  const getDateObj = (dateStr) => (dateStr ? parseISO(dateStr) : null);
+
+  // Helper to convert Date to yyyy-MM-dd string for API
+  const toAPIDate = (dateObj) => dateObj ? format(dateObj, 'yyyy-MM-dd') : '';
+
+  // Update handleChange for react-datepicker
+  const handleDateChange = (date, name) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: date ? toAPIDate(date) : ''
+    }));
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -138,63 +163,67 @@ export default function CheckRates() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Check-in Date */}
-              <div className="relative">
+              <div className="w-full">
                 <label htmlFor="checkIn" className="block text-sm font-medium text-gray-700 mb-2">
                   Check-in Date
                 </label>
-                <div className="relative">
-                  <input
-                    ref={checkInRef}
-                    type="date"
+                <div className="relative w-full">
+                  <DatePicker
                     id="checkIn"
                     name="checkIn"
-                    value={formData.checkIn}
-                    onChange={handleChange}
-                    min={new Date().toISOString().split('T')[0]}
-                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 custom-date-input"
-                    required
+                    selected={getDateObj(formData.checkIn)}
+                    onChange={(date) => handleDateChange(date, 'checkIn')}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="dd/mm/yyyy"
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 datepicker-fullwidth"
+                    wrapperClassName="w-full"
+                    minDate={new Date()}
+                    ref={checkInRef}
+                    autoComplete="off"
                   />
-                  <div
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
-                    onClick={() => checkInRef.current && checkInRef.current.showPicker ? checkInRef.current.showPicker() : checkInRef.current && checkInRef.current.focus()}
+                  <span
+                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
+                    onClick={() => checkInRef.current && checkInRef.current.setFocus && checkInRef.current.setFocus()}
                   >
-                    <FaCalendarAlt className="text-gray-400" />
-                  </div>
+                    <FaCalendarAlt className="text-gray-400 text-xl" />
+                  </span>
                 </div>
               </div>
 
               {/* Check-out Date */}
-              <div className="relative">
+              <div className="w-full">
                 <label htmlFor="checkOut" className="block text-sm font-medium text-gray-700 mb-2">
                   Check-out Date
                 </label>
-                <div className="relative">
-                  <input
-                    ref={checkOutRef}
-                    type="date"
+                <div className="relative w-full">
+                  <DatePicker
                     id="checkOut"
                     name="checkOut"
-                    value={formData.checkOut}
-                    onChange={handleChange}
-                    min={formData.checkIn || new Date().toISOString().split('T')[0]}
-                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 custom-date-input"
-                    required
+                    selected={getDateObj(formData.checkOut)}
+                    onChange={(date) => handleDateChange(date, 'checkOut')}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="dd/mm/yyyy"
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 datepicker-fullwidth"
+                    wrapperClassName="w-full"
+                    minDate={formData.checkIn ? getDateObj(formData.checkIn) : new Date()}
+                    ref={checkOutRef}
+                    autoComplete="off"
                   />
-                  <div
-                    className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-pointer"
-                    onClick={() => checkOutRef.current && checkOutRef.current.showPicker ? checkOutRef.current.showPicker() : checkOutRef.current && checkOutRef.current.focus()}
+                  <span
+                    className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
+                    onClick={() => checkOutRef.current && checkOutRef.current.setFocus && checkOutRef.current.setFocus()}
                   >
-                    <FaCalendarAlt className="text-gray-400" />
-                  </div>
+                    <FaCalendarAlt className="text-gray-400 text-xl" />
+                  </span>
                 </div>
               </div>
 
               {/* Number of Guests */}
-              <div className="relative">
+              <div className="w-full">
                 <label htmlFor="guests" className="block text-sm font-medium text-gray-700 mb-2">
                   Number of Guests
                 </label>
-                <div className="relative">
+                <div className="relative w-full">
                   <input
                     type="number"
                     id="guests"
@@ -203,19 +232,21 @@ export default function CheckRates() {
                     max="10"
                     value={formData.guests}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
-                  <FaUser className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                    <FaUser className="text-gray-400 text-xl" />
+                  </span>
                 </div>
               </div>
 
               {/* Number of Rooms */}
-              <div className="relative">
+              <div className="w-full">
                 <label htmlFor="rooms" className="block text-sm font-medium text-gray-700 mb-2">
                   Number of Rooms
                 </label>
-                <div className="relative">
+                <div className="relative w-full">
                   <input
                     type="number"
                     id="rooms"
@@ -224,10 +255,12 @@ export default function CheckRates() {
                     max="5"
                     value={formData.rooms}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     required
                   />
-                  <FaBed className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                    <FaBed className="text-gray-400 text-xl" />
+                  </span>
                 </div>
               </div>
             </div>
@@ -375,10 +408,10 @@ export default function CheckRates() {
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900">{rate.deal_name}</h3>
                         <p className="text-gray-600 mt-1">
-                          {new Date(rate.start_date).toLocaleDateString()} - {new Date(rate.end_date).toLocaleDateString()}
+                          {formatDateDMY(rate.start_date)} - {formatDateDMY(rate.end_date)}
                         </p>
                         <p className="text-sm text-gray-500 mt-2">
-                          Cancellation Policy: {rate.cancellation_policy}
+                          {rate.cancellation_policy}
                         </p>
                       </div>
                       <div className="text-right">
