@@ -1,7 +1,6 @@
 // controllers/bookingController.js
 const { Op } = require('sequelize');
-const { sequelize, Guest, Booking, Room, RoomType, Feedback } // Nạp tất cả model cần thiết từ models/index.js
-    = require('../db'); // Giả sử models/index.js export tất cả models và sequelize
+const { sequelize, Guest, Booking, Room, RoomType, Feedback } = require('../db/index.js'); 
 
 const bookingController = {
   initiateBooking: async (req, res, next) => {
@@ -91,8 +90,7 @@ const bookingController = {
         const conflictingBooking = await Booking.findOne({
           where: {
             room_id: room.room_id,
-            // BẠN CẦN CUNG CẤP CÁC GIÁ TRỊ ENUM CHÍNH XÁC TỪ `booking_status_enum`
-            // cho các trạng thái không còn giữ phòng (ví dụ: đã hủy, đã hoàn thành, không đến)
+            
             status: { [Op.notIn]: ['Checked-out', 'Cancelled'] },
             // Logic kiểm tra chồng chéo lịch
             [Op.and]: [
@@ -115,20 +113,19 @@ const bookingController = {
       }
 
 
-      // ----- 4. Tính toán total_amount (Đơn giản hóa) -----
+      // ----- 4. Tính toán total_amount  -----
       const roomType = await RoomType.findByPk(selectedRoom.type_id, { transaction: t });
       if (!roomType) {
         await t.rollback();
-        // Lỗi này không nên xảy ra nếu dữ liệu DB nhất quán (type_id trong room phải có trong roomtypes)
+        
         return res.status(500).json({ message: `Lỗi cấu hình: Không tìm thấy loại phòng cho phòng ID ${selectedRoom.room_id}.` });
       }
       const numberOfNights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-      // Đây là logic tính giá rất cơ bản, bạn sẽ cần mở rộng nó nhiều
       const total_amount = (roomType.base_price || 0) * numberOfNights;
 
 
       // ----- 5. Tạo bản ghi Booking -----
-      // BẠN CẦN CUNG CẤP GIÁ TRỊ ENUM CHÍNH XÁC CHO 'Awaiting-Payment'
+ 
       const initialBookingStatus = 'Awaiting-Payment'; // Từ `booking_status_enum`
 
       const newBooking = await Booking.create({
@@ -170,7 +167,7 @@ const bookingController = {
     }
   },
 
-  // ... (cancelBooking, confirmBooking và các hàm khác sẽ ở đây) ...
+  
 
   // Nhớ cập nhật cancelBooking đã tạo ở bước trước nếu cần
   cancelBooking: async (req, res, next) => {
@@ -204,44 +201,274 @@ const bookingController = {
         next(error);
     }
   },
-
-  confirmBooking: async (req, res, next) => {
-    const t = await sequelize.transaction();
-    try {
-        const { bookingId } = req.params;
-        // const { payment_details } = req.body; // Nếu bạn cần lưu thông tin thanh toán
-
-        const booking = await Booking.findByPk(bookingId, { transaction: t });
-
-        if (!booking) {
-            await t.rollback();
-            return res.status(404).json({ message: `Không tìm thấy booking với ID: ${bookingId}` });
-        }
-
-        // BẠN CẦN CUNG CẤP GIÁ TRỊ ENUM CHÍNH XÁC TỪ booking_status_enum
-        const paymentPendingStatus = 'Awaiting-Payment';
-        const confirmedStatus = 'Booked';
-
-        if (booking.status !== paymentPendingStatus) {
-            await t.rollback();
-            return res.status(403).json({ message: `Không thể xác nhận booking này. Trạng thái hiện tại: ${booking.status}` });
-        }
-
-        booking.status = confirmedStatus;
-        // Giả sử thanh toán đã đủ
-        booking.amount_paid = booking.total_amount; // Cập nhật số tiền đã trả
-        // if (payment_details) { /* Xử lý payment_details */ }
-
-        await booking.save({ transaction: t });
-        await t.commit();
-        res.status(200).json({ message: 'Booking đã được xác nhận thành công.', booking });
-
-    } catch (error) {
-        await t.rollback();
-        console.error('Lỗi khi xác nhận booking:', error);
-        next(error);
-    }
+getAllBooking: async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const booking = await Booking.findAll({ transaction: t });
+    res.status(200).json({ booking });
+  } catch (error) {
+    await t.rollback();
+    console.error('Lỗi khi lấy tất cả booking:', error);
+    next(error);
   }
+},
+
+getBookingById: async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { bookingId } = req.params;
+    const booking = await Booking.findByPk(bookingId, { transaction: t });
+    res.status(200).json({ booking });
+  } catch (error) { 
+    await t.rollback();
+    console.error('Lỗi khi lấy booking theo ID:', error);
+    next(error);
+  }
+},
+
+findAllBookingsByGuestName: async (guestName) => {
+  try {
+    const bookings = await Booking.findAll({
+      include: [
+        {
+          model: Guest,
+          as: 'guest',
+          where: {
+            
+            name: { [Op.iLike]: `%${guestName}%` }
+          },
+          required: true 
+        }
+      ]
+    });
+
+    if (bookings.length > 0) {
+      console.log(`Tìm thấy ${bookings.length} booking(s) cho khách có tên: ${guestName}`);
+      // bookings.forEach(b => console.log(b.toJSON()));
+      return bookings;
+    } else {
+      console.log(`Không tìm thấy booking nào cho khách có tên: ${guestName}`);
+      return [];
+    }
+  } catch (error) {
+    console.error("Lỗi khi tìm tất cả bookings theo tên khách:", error);
+    throw error;
+  }
+},
+
+
+
+editBooking: async (req, res, next) => {
+  const { bookingId } = req.params;
+  // Giả sử req.body chứa trực tiếp các trường cần cập nhật
+  // Ví dụ: { check_in_date: "...", num_adults: ... }
+  const updates = req.body; 
+
+  const t = await sequelize.transaction();
+  try {
+    const booking = await Booking.findByPk(bookingId, {
+      include: [ // Nạp các model liên quan để kiểm tra và tính toán lại
+        { model: Room, as: 'room', include: [{ model: RoomType, as: 'roomType' }] },
+        { model: Guest, as: 'guest' }
+      ],
+      transaction: t
+    });
+
+    if (!booking) {
+      await t.rollback();
+      return res.status(404).json({ message: `Không tìm thấy booking với ID: ${bookingId}` });
+    }
+
+    // --- Kiểm tra xem có thay đổi các trường quan trọng không ---
+    const hasDateChanges = updates.check_in_date || updates.check_out_date;
+    const hasGuestNumberChanges = updates.num_adults !== undefined || updates.num_children !== undefined;
+
+    // Lấy giá trị hiện tại hoặc giá trị mới nếu có
+    const newCheckIn = updates.check_in_date ? new Date(updates.check_in_date) : new Date(booking.check_in);
+    const newCheckOut = updates.check_out_date ? new Date(updates.check_out_date) : new Date(booking.check_out);
+    const newNumAdults = updates.num_adults !== undefined ? parseInt(updates.num_adults) : booking.num_adults;
+    const newNumChildren = updates.num_children !== undefined ? parseInt(updates.num_children || 0) : booking.num_children;
+    
+    // Xác thực ngày cơ bản (nếu có thay đổi)
+    if (hasDateChanges) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        if (isNaN(newCheckIn.getTime()) || isNaN(newCheckOut.getTime()) || newCheckIn < today) {
+            await t.rollback();
+            return res.status(400).json({ message: 'Ngày check-in hoặc check-out không hợp lệ hoặc ngày check-in đã qua.' });
+        }
+        if (newCheckIn >= newCheckOut) {
+            await t.rollback();
+            return res.status(400).json({ message: 'Ngày check-out phải sau ngày check-in.' });
+        }
+    }
+    if (newNumAdults < 1) {
+        await t.rollback();
+        return res.status(400).json({ message: 'Số người lớn phải ít nhất là 1.' });
+    }
+
+    // --- Logic kiểm tra lại nếu có thay đổi quan trọng ---
+    if (hasDateChanges || hasGuestNumberChanges) {
+      const room = booking.room; // Room đã được include
+
+      // 1. Kiểm tra lại sức chứa phòng
+      const totalNewGuests = newNumAdults + newNumChildren;
+      const roomCapacity = (room.adult_number || 0) + (room.child_number || 0);
+      if (totalNewGuests > roomCapacity) {
+        await t.rollback();
+        return res.status(400).json({ message: `Số lượng khách (${totalNewGuests}) vượt quá sức chứa (${roomCapacity}) của phòng ${room.room_number}.` });
+      }
+      if (newNumAdults > (room.adult_number || 0) || newNumChildren > (room.child_number || 0) ) {
+        await t.rollback();
+        return res.status(400).json({ message: `Số người lớn hoặc trẻ em vượt quá sức chứa của phòng.` });
+      }
+
+      // 2. Kiểm tra lại phòng trống (nếu ngày tháng thay đổi)
+      if (hasDateChanges) {
+        const conflictingBooking = await Booking.findOne({
+          where: {
+            room_id: room.room_id,
+            booking_id: { [Op.ne]: bookingId }, // Loại trừ chính booking đang sửa
+            status: { [Op.notIn]: ['Cancelled', 'Checked-out'] }, // Thay thế bằng ENUM của bạn
+            [Op.and]: [
+              { check_in: { [Op.lt]: newCheckOut } },
+              { check_out: { [Op.gt]: newCheckIn } }
+            ]
+          },
+          transaction: t
+        });
+
+        if (conflictingBooking) {
+          await t.rollback();
+          return res.status(409).json({ message: `Phòng ${room.room_number} đã được đặt trong khoảng thời gian mới bạn chọn.` });
+        }
+      }
+
+      // 3. Tính toán lại total_amount
+      const roomType = room.roomType; // RoomType đã được include
+      if (!roomType) {
+          await t.rollback();
+          return res.status(500).json({ message: `Lỗi cấu hình: Không tìm thấy loại phòng.`})
+      }
+      const numberOfNights = Math.ceil((newCheckOut.getTime() - newCheckIn.getTime()) / (1000 * 60 * 60 * 24));
+      updates.total_amount = (roomType.base_price || 0) * numberOfNights; // Gán giá trị mới vào object updates
+    }
+    
+    // Chỉ cập nhật các trường được phép và có trong req.body
+    // Tạo một object chứa các trường được phép cập nhật từ req.body
+    const allowedUpdates = {};
+    if (updates.hasOwnProperty('check_in_date')) allowedUpdates.check_in = newCheckIn;
+    if (updates.hasOwnProperty('check_out_date')) allowedUpdates.check_out = newCheckOut;
+    if (updates.hasOwnProperty('num_adults')) allowedUpdates.num_adults = newNumAdults;
+    if (updates.hasOwnProperty('num_children')) allowedUpdates.num_children = newNumChildren;
+    // Nếu total_amount được tính lại, nó sẽ có trong `updates` và được gán vào `allowedUpdates`
+    if (updates.hasOwnProperty('total_amount')) allowedUpdates.total_amount = updates.total_amount;
+
+    
+
+    if (Object.keys(allowedUpdates).length > 0) {
+        await booking.update(allowedUpdates, { transaction: t });
+    } else {
+        // Không có gì để cập nhật, nhưng vẫn có thể coi là thành công (hoặc trả về 304 Not Modified)
+        await t.commit(); // Commit transaction vì không có lỗi
+        return res.status(200).json({ message: "Không có thông tin nào được thay đổi.", booking });
+    }
+
+    await t.commit();
+    res.status(200).json(booking); // Trả về booking đã được cập nhật
+
+  } catch (error) {
+    await t.rollback();
+    console.error('Lỗi khi sửa booking:', error);
+    if (error.name === 'SequelizeValidationError' || error.name === 'SequelizeUniqueConstraintError') {
+        return res.status(400).json({ message: error.message, errors: error.errors });
+    }
+    next(error);
+  }
+},
+
+deleteBooking: async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+    const { bookingId } = req.params;
+    const booking = await Booking.findByPk(bookingId, { transaction: t });
+    if (!booking) {
+      await t.rollback();
+      return res.status(404).json({ message: `Không tìm thấy booking với ID: ${bookingId}` });
+    }
+    await booking.destroy({ transaction: t });
+    await t.commit();
+    res.status(200).json({ message: 'Booking đã được xóa thành công.', booking });
+
+  } catch (error) {
+    await t.rollback();
+    console.error('Lỗi khi xóa booking:', error);
+    next(error);
+  }
+},
+
+  // controllers/bookingController.js
+// ...
+confirmBooking: async (req, res, next) => {
+  const t = await sequelize.transaction();
+  try {
+      const { bookingId } = req.params;
+      // const { payment_details } = req.body; // Nhận thông tin thanh toán nếu có
+
+      const booking = await Booking.findByPk(bookingId, { transaction: t });
+
+      if (!booking) {
+          await t.rollback();
+          return res.status(404).json({ message: `Không tìm thấy booking với ID: ${bookingId}` });
+      }
+
+      const paymentPendingStatus = 'Awaiting-Payment'; // Giá trị ENUM của bạn
+      const confirmedStatus = 'Booked';           // Giá trị ENUM của bạn
+
+      if (booking.status !== paymentPendingStatus) {
+          await t.rollback();
+          return res.status(403).json({ message: `Không thể xác nhận booking này. Trạng thái hiện tại: ${booking.status}` });
+      }
+
+      booking.status = confirmedStatus;
+      booking.amount_paid = booking.total_amount; // Giả sử thanh toán đủ
+      // if (payment_details) { /* Xử lý, lưu payment_details nếu cần */ }
+      
+
+      await booking.save({ transaction: t });
+
+
+      if(booking.room_id)
+      {
+        const room = await Room.findByPk(booking.room_id, { transaction: t });
+        if(room)
+        {
+          const newRoomStatus = 'Booked';
+          room.room_status = newRoomStatus;
+          await room.save({ transaction: t });
+          console.log(`Phòng ${room.room_number} đã được đặt cho booking ${bookingId}.`);
+        }
+        else
+        {
+          console.log(`Không tìm thấy phòng với ID: ${booking.room_id}`);
+          await t.rollback();
+          return res.status(500).json({ message: `Không tìm thấy phòng với ID: ${booking.room_id}` });
+        }
+      }
+      else {
+        // Trường hợp này cũng là bất thường nếu booking luôn phải có room_id
+        console.warn(`Booking ID ${bookingId} không có room_id. Không thể cập nhật trạng thái phòng.`);
+      }
+      
+      await t.commit();
+      res.status(200).json({ message: 'Booking đã được xác nhận thành công.', booking });
+
+  } catch (error) {
+      await t.rollback();
+      console.error('Lỗi khi xác nhận booking:', error);
+      next(error);
+  }
+}
+// ...
 
 };
 

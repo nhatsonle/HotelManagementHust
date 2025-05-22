@@ -7,8 +7,12 @@ router.post('/initiate', bookingController.initiateBooking); // API để tìm p
 router.patch('/:bookingId/cancel', bookingController.cancelBooking); // API hủy booking đang chờ
 router.patch('/:bookingId/confirm', bookingController.confirmBooking); // API xác nhận sau thanh toán
 
-// Bạn có thể thêm các route khác như lấy danh sách booking, lấy chi tiết booking sau
-// router.get('/', bookingController.getAllBookings);
-// router.get('/:bookingId', bookingController.getBookingById);
+router.get('/', bookingController.getAllBooking);
+router.get('/:bookingId', bookingController.getBookingById);
+router.get('/guest/:guestName', bookingController.findAllBookingsByGuestName);
+router.put('/:bookingId', bookingController.editBooking);
+router.delete('/:bookingId', bookingController.deleteBooking);
+
+
 
 module.exports = router;

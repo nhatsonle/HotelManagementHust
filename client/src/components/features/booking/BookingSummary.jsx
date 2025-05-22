@@ -5,6 +5,7 @@ import axios from 'axios';
 function CancelBookingButton({ bookingId, onSuccess, onError, disabled }) {
   const [isLoading, setIsLoading] = React.useState(false);
 
+  
   const handleCancel = async () => {
     setIsLoading(true);
     try {
@@ -70,6 +71,25 @@ function BookingSummary() {
   const [error, setError] = React.useState(null);
   const [successMsg, setSuccessMsg] = React.useState('');
   const [bookingData, setBookingData] = React.useState({ booking, room_info });
+
+
+
+  const handleProceedToPayment = () => {
+    if (bookingData && bookingData.booking) {
+      const bookingId = bookingData.booking.booking_id;
+      const amountToPay = bookingData.room_info.total_amount;
+      const roomDetails = bookingData.room_info;
+
+      navigate(`/payment/${bookingId}`, {
+        state: {
+          amount: amountToPay,
+          bookingDetails: bookingData.booking,
+          roomDetails: roomDetails
+        }
+      });
+    }
+  };
+
 
   const handleCancelSuccess = (msg) => {
     setSuccessMsg(msg);
@@ -142,7 +162,7 @@ function BookingSummary() {
         <div className="flex gap-4 justify-center mt-8">
           {bookingData.booking.status !== 'Booked' && (
             <>
-              <button className="bg-green-600 text-white rounded-lg px-6 py-2 font-header font-bold hover:bg-green-700 transition-colors" onClick={handleConfirmBooking} disabled={isLoading}>
+              <button className="bg-green-600 text-white rounded-lg px-6 py-2 font-header font-bold hover:bg-green-700 transition-colors" onClick={handleProceedToPayment} disabled={isLoading}>
                 Confirm booking and Payment
               </button>
               <CancelBookingButton
