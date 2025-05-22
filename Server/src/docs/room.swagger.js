@@ -53,23 +53,6 @@
  *           minimum: 0
  *           maximum: 10
  *           description: Maximum number of children allowed
- *         roomType:
- *           type: object
- *           description: Associated room type information
- *           properties:
- *             type_id:
- *               type: integer
- *               description: The ID of the room type
- *             type_name:
- *               type: string
- *               description: Name of the room type
- *             base_price:
- *               type: number
- *               format: float
- *               description: Base price for this room type
- *             cancellation_policy:
- *               type: string
- *               description: Cancellation policy for this room type
  *       example:
  *         room_number: "101"
  *         bed_type: "King Size"
@@ -79,11 +62,6 @@
  *         type_id: 1
  *         adult_number: 2
  *         child_number: 1
- *         roomType:
- *           type_id: 1
- *           type_name: "Deluxe Suite"
- *           base_price: 150.00
- *           cancellation_policy: "24 hours before check-in"
  * 
  *     RoomResponse:
  *       type: object

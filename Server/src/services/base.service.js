@@ -76,7 +76,7 @@ class BaseService {
 
   async delete(id, force = false) {
     const deletedCount = await this.model.destroy({
-      where: { id },
+      where: { [this.model.primaryKeyAttribute]: id },
       force
     });
     return deletedCount > 0;
