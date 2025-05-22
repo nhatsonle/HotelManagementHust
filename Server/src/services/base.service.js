@@ -68,7 +68,7 @@ class BaseService {
 
   async update(id, data) {
     const [updatedCount, updatedRows] = await this.model.update(data, {
-      where: { id },
+      where: { [this.model.primaryKeyAttribute]: id },
       returning: true
     });
     return updatedCount > 0 ? updatedRows[0] : null;
