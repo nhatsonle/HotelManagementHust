@@ -36,9 +36,7 @@ const Booking = sequelize.define('Booking', {
     allowNull: true
   },
   status: {
-    // QUAN TRỌNG: Thay thế các giá trị 'pending', 'confirmed', 'cancelled'
-    // bằng các giá trị thực tế có trong kiểu ENUM 'public.booking_status_enum' của bạn.
-    // Ví dụ: type: DataTypes.ENUM('Chờ xác nhận', 'Đã xác nhận', 'Đã hủy', 'Hoàn thành'),
+    
     type: DataTypes.ENUM('Booked', 'Cancelled', 'Awaiting-Payment'), // <-- THAY THẾ CÁC GIÁ TRỊ ENUM NÀY!
     allowNull: true
   },

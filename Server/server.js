@@ -2,12 +2,17 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
-// const swaggerJsdoc = require('swagger-jsdoc');
-// const swaggerUi = require('swagger-ui-express');
-// const swaggerSpec = require('./src/config/swagger.config');
+
+
 const app = express();
 const port = 3000;
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerOptions = require('./src/config/swagger.config');
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // Nạp các module router
 const mainRoutes = require('./src/api/main.routes'); // Đường dẫn đến file mainRoutes.js
 const guestRoutes = require('./src/api/guest.routes'); // Đường dẫn đến file userRoutes.js
@@ -18,7 +23,7 @@ connectDB();
 
 app.use(helmet());
 app.use(cors());
-
+app.disable('x-powered-by');
 // Middleware vẫn giữ ở đây (hoặc có thể tách ra thư mục middleware/ sau này)
 app.use(express.json());
 
