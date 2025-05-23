@@ -3,6 +3,10 @@ const app = express();
 require('dotenv').config()
 const apiRoutes = require('./src/api');
 const PORT = process.env.PORT || 3000;
+const cors = require('cors');
+
+app.use(cors()); 
+
 
 app.use(express.json());
 app.use('/api', apiRoutes);
