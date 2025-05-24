@@ -5,7 +5,7 @@ import { Button } from "../../ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { Badge } from "../../ui/badge";
-import { Loader2, ChevronLeft, ChevronRight, Calendar, Plus, Minus } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Calendar, Plus, Minus, Info } from "lucide-react";
 import { FaCalendarAlt } from 'react-icons/fa';
 import SubHeroSection from '@/components/ui/SubHeroSection';
 import { Checkbox } from "../../ui/checkbox";
@@ -14,6 +14,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const Rooms = () => {
   const [selectedType, setSelectedType] = useState('all');
@@ -43,6 +44,7 @@ const Rooms = () => {
   // Refs for date pickers
   const checkInRef = useRef(null);
   const checkOutRef = useRef(null);
+  const fetchTimeout = useRef();
 
   const sortOptions = [
     { value: 'price-asc', label: 'Price: Low to High' },
@@ -61,14 +63,22 @@ const Rooms = () => {
     { value: '16+', label: '16th Floor & Above' }
   ];
 
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { roomId, checkIn: locationCheckIn, checkOut: locationCheckOut, adults: locationAdults, children: locationChildren } = location.state || {};
+
   useEffect(() => {
     fetchRooms();
   }, []);
 
   useEffect(() => {
     if (checkIn && checkOut && (adults > 0 || children > 0)) {
-      fetchRooms();
+      if (fetchTimeout.current) clearTimeout(fetchTimeout.current);
+      fetchTimeout.current = setTimeout(() => {
+        fetchRooms();
+      }, 500); // 500ms debounce
     }
+    return () => clearTimeout(fetchTimeout.current);
   }, [checkIn, checkOut, adults, children]);
 
   useEffect(() => {
@@ -102,7 +112,7 @@ const Rooms = () => {
         });
         
         // Call availability API with parameters
-        response = await axios.get(`/api/rooms/available`, {
+        response = await axios.get(`https://hotelmanagementhust.onrender.com/api/rooms/available`, {
           params: {
             checkin: formattedCheckIn,
             checkout: formattedCheckOut,
@@ -113,7 +123,7 @@ const Rooms = () => {
       } else {
         console.log('Calling default rooms API');
         // Default API call without parameters
-        response = await axios.get('/api/rooms');
+        response = await axios.get('https://hotelmanagementhust.onrender.com/api/rooms');
       }
       
       console.log('Raw API Response:', response);
@@ -141,7 +151,12 @@ const Rooms = () => {
             amenities: (room.room_facility || room.amenities || '').split(', ').filter(Boolean),
             image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-4.0.3", // Default image
             available: room.room_status === 'Available' || room.available,
-            bed_type: room.bed_type || 'Standard'
+            bed_type: room.bed_type || 'Standard',
+            room_number: room.room_number,
+            room_floor: room.room_floor,
+            adult_number: room.adult_number,
+            child_number: room.child_number,
+            roomType: room.roomType
           };
           
           console.log('Transformed room:', transformedRoom);
@@ -618,7 +633,40 @@ const Rooms = () => {
                     )}
                   </div>
                   <CardHeader className="bg-white">
-                    <CardTitle className="text-xl">{room.name}</CardTitle>
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-xl">{room.name}</CardTitle>
+                      <div className="relative group">
+                        <button className="rounded-full p-1 hover:bg-gray-100 transition-colors">
+                          <Info className="h-4 w-4 text-gray-500" />
+                        </button>
+                        <div className="absolute right-0 top-full mt-2 w-64 p-3 bg-white rounded-lg shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10">
+                          <div className="space-y-3 text-sm">
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600">Room Number:</span>
+                              <span className="font-semibold text-black">{room.room_number}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600">Floor:</span>
+                              <span className="font-semibold text-black">{room.room_floor}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Cancellation Policy:</span>
+                              <div className="ml-2 mt-1 text-gray-800 font-medium whitespace-pre-line">
+                                {room.roomType?.cancellation_policy}
+                              </div>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600">Max Adults:</span>
+                              <span className="font-semibold text-black">{room.adult_number}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600">Max Children:</span>
+                              <span className="font-semibold text-black">{room.child_number}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                     <CardDescription>
                       <div className="flex flex-col gap-1">
                         <span>Capacity: {room.capacity} {room.capacity === 1 ? 'person' : 'people'}</span>
@@ -641,9 +689,33 @@ const Rooms = () => {
                     </div>
                   </CardContent>
                   <CardFooter className="bg-white">
-                    <Button 
-                      className={`w-full transition-all duration-300 ${room.available ? 'hover:bg-blue-700 hover:text-white' : 'bg-gray-400'}`} 
+                    <Button
+                      className={`w-full transition-all duration-300 ${room.available ? 'hover:bg-blue-700 hover:text-white' : 'bg-gray-400'}`}
                       disabled={!room.available}
+                      onClick={e => {
+                        e.stopPropagation();
+                        if (
+                          room.available &&
+                          checkIn &&
+                          checkOut &&
+                          adults &&
+                          adults >= 1 &&
+                          children !== null &&
+                          children !== undefined
+                        ) {
+                          navigate('/guest-info', {
+                            state: {
+                              checkInDate: checkIn?.toISOString().split('T')[0],
+                              checkOutDate: checkOut?.toISOString().split('T')[0],
+                              numAdults: adults,
+                              numChildren: children,
+                              room_type_id: room.id
+                            }
+                          });
+                        } else {
+                          alert('Please select check-in & check-out dates, adult number & children number before booking.');
+                        }
+                      }}
                     >
                       {room.available ? 'Book Now' : 'Not Available'}
                     </Button>
@@ -756,6 +828,12 @@ const Rooms = () => {
 
       {console.log('Modal Opened')}
       {console.log('Feedback:', feedback)}
+
+      {loading && (
+        <div className="absolute inset-0 bg-white/60 flex items-center justify-center z-50">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      )}
     </div>
   );
 };
