@@ -1,22 +1,29 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import { Badge } from "../../ui/badge";
-import { Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Calendar, Plus, Minus } from "lucide-react";
+import { FaCalendarAlt } from 'react-icons/fa';
 import SubHeroSection from '@/components/ui/SubHeroSection';
 import { Checkbox } from "../../ui/checkbox";
 import { Label } from "../../ui/label";
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { format } from 'date-fns';
+import { Calendar as CalendarComponent } from "../../ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
+import { cn } from "@/lib/utils";
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const Rooms = () => {
-  const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedBedType, setSelectedBedType] = useState('all');
   const [selectedFacilities, setSelectedFacilities] = useState([]);
+  const [selectedFloor, setSelectedFloor] = useState('all');
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,9 +33,20 @@ const Rooms = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const roomsPerPage = 9;
   const [sortBy, setSortBy] = useState('price-asc');
-  const [priceRange, setPriceRange] = useState([0, 3000000]);
-  const [minPrice, setMinPrice] = useState(0);
+  const [priceRange, setPriceRange] = useState([10000, 3000000]);
+  const [minPrice, setMinPrice] = useState(10000);
   const [maxPrice, setMaxPrice] = useState(3000000);
+  const [checkIn, setCheckIn] = useState(null);
+  const [checkOut, setCheckOut] = useState(null);
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState(0);
+  const [feedback, setFeedback] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRoomType, setSelectedRoomType] = useState('');
+
+  // Refs for date pickers
+  const checkInRef = useRef(null);
+  const checkOutRef = useRef(null);
 
   const sortOptions = [
     { value: 'price-asc', label: 'Price: Low to High' },
@@ -39,6 +57,14 @@ const Rooms = () => {
     { value: 'name-desc', label: 'Name: Z-A' },
   ];
 
+  const floorOptions = [
+    { value: 'all', label: 'All Floors' },
+    { value: '1-5', label: '1st - 5th Floor' },
+    { value: '6-10', label: '6th - 10th Floor' },
+    { value: '11-15', label: '11th - 15th Floor' },
+    { value: '16+', label: '16th Floor & Above' }
+  ];
+
   useEffect(() => {
     fetchRooms();
   }, []);
@@ -46,7 +72,7 @@ const Rooms = () => {
   useEffect(() => {
     if (rooms.length > 0) {
       const prices = rooms.map(room => parseInt(room.price.replace(/\D/g, '')));
-      const min = Math.min(...prices);
+      const min = Math.max(10000, Math.min(...prices));
       const max = Math.max(...prices);
       setMinPrice(min);
       setMaxPrice(max);
@@ -118,13 +144,17 @@ const Rooms = () => {
   const filteredRooms = rooms.filter(room => {
     const price = parseInt(room.price.replace(/\D/g, ''));
     const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
-    const matchesSearch = room.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = selectedType === 'all' || room.type === selectedType;
     const matchesBedType = selectedBedType === 'all' || room.bed_type === selectedBedType;
     const matchesFacilities = selectedFacilities.length === 0 || 
       selectedFacilities.every(facility => room.amenities.includes(facility));
+    const matchesFloor = selectedFloor === 'all' || 
+      (selectedFloor === '1-5' && room.room_floor >= 1 && room.room_floor <= 5) ||
+      (selectedFloor === '6-10' && room.room_floor >= 6 && room.room_floor <= 10) ||
+      (selectedFloor === '11-15' && room.room_floor >= 11 && room.room_floor <= 15) ||
+      (selectedFloor === '16+' && room.room_floor >= 16);
     
-    return matchesPrice && matchesSearch && matchesType && matchesBedType && matchesFacilities;
+    return matchesPrice && matchesType && matchesBedType && matchesFacilities && matchesFloor;
   });
 
   const sortedRooms = [...filteredRooms].sort((a, b) => {
@@ -155,7 +185,40 @@ const Rooms = () => {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, selectedType, selectedBedType, selectedFacilities]);
+  }, [selectedType, selectedBedType, selectedFacilities]);
+
+  // Function to get image URL based on room type
+  const getRoomImage = (type) => {
+    const images = {
+      standard: "https://media.sojohotels.com/anh-phong/ba5c5a98f1e4dd688c451701680201538.png",
+      deluxe: "https://media.sojohotels.com/sojo-da-nang/6c7c0b2c6f1efce78e5f1715066875943.png",
+      suite: "https://www.hafh.com/_next/image?url=https%3A%2F%2Fstorage.googleapis.com%2Fhafh-prod-property_room_type_image%2Frl8kr0el4a2zfrafs9yl53p2xmvu&w=3840&q=75",
+    };
+    return images[type] || "https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-4.0.3"; // Default image
+  };
+
+  // Function to fetch feedback for a specific room type
+  const fetchFeedback = async (roomType) => {
+    try {
+      console.log(`Fetching feedback for room type: ${roomType}`);
+      const response = await axios.get(`/api/feedback?roomType=${roomType}`);
+      console.log('API Response:', response.data);
+      if (response.data.success) {
+        setFeedback(response.data.feedback);
+      } else {
+        console.error('API Error:', response.data.message);
+      }
+    } catch (err) {
+      console.error('Error fetching feedback:', err);
+    }
+  };
+
+  // Function to handle room click
+  const handleRoomClick = (roomType) => {
+    setSelectedRoomType(roomType);
+    fetchFeedback(roomType);
+    setIsModalOpen(true);
+  };
 
   if (loading) {
     return (
@@ -191,20 +254,133 @@ const Rooms = () => {
           Discover luxury and comfort in our carefully curated selection of rooms
         </p>
 
+        {/* Booking Details Section */}
+        <div className="max-w-4xl mx-auto bg-gradient-to-r from-gray-50 to-gray-100 rounded-2xl shadow-xl p-8 mb-16 border border-gray-200">
+          <h3 className="text-2xl font-semibold text-gray-800 mb-6 text-center">Book Your Stay</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            {/* Check-in Date */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <div className="font-medium text-gray-700 mb-3">Check-in Date</div>
+              <div className="relative w-full">
+                <DatePicker
+                  selected={checkIn}
+                  onChange={date => setCheckIn(date)}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Select date"
+                  className="w-full px-4 py-3 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 datepicker-fullwidth bg-white text-gray-700 placeholder-gray-400"
+                  wrapperClassName="w-full"
+                  minDate={new Date()}
+                  ref={checkInRef}
+                  autoComplete="off"
+                />
+                <span
+                  className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
+                  onClick={() => checkInRef.current && checkInRef.current.setFocus && checkInRef.current.setFocus()}
+                >
+                  <FaCalendarAlt className="text-blue-500 text-xl" />
+                </span>
+              </div>
+            </div>
+
+            {/* Check-out Date */}
+            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+              <div className="font-medium text-gray-700 mb-3">Check-out Date</div>
+              <div className="relative w-full">
+                <DatePicker
+                  selected={checkOut}
+                  onChange={date => setCheckOut(date)}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Select date"
+                  className="w-full px-4 py-3 pr-10 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 datepicker-fullwidth bg-white text-gray-700 placeholder-gray-400"
+                  wrapperClassName="w-full"
+                  minDate={checkIn || new Date()}
+                  ref={checkOutRef}
+                  autoComplete="off"
+                />
+                <span
+                  className="absolute inset-y-0 right-3 flex items-center cursor-pointer"
+                  onClick={() => checkOutRef.current && checkOutRef.current.setFocus && checkOutRef.current.setFocus()}
+                >
+                  <FaCalendarAlt className="text-blue-500 text-xl" />
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Guests */}
+          <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 max-w-2xl mx-auto">
+            <div className="font-medium text-gray-700 mb-3">Guests</div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Adults */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <div className="font-medium text-gray-800">Adults</div>
+                  <div className="text-sm text-gray-500">Ages 13 or above</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                    onClick={() => setAdults(Math.max(1, adults - 1))}
+                    disabled={adults <= 1}
+                  >
+                    <Minus className="h-4 w-4 text-gray-600" />
+                  </Button>
+                  <span className="w-8 text-center font-medium text-gray-700">{adults}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                    onClick={() => setAdults(adults + 1)}
+                    disabled={adults >= 10}
+                  >
+                    <Plus className="h-4 w-4 text-gray-600" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Children */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div>
+                  <div className="font-medium text-gray-800">Children</div>
+                  <div className="text-sm text-gray-500">Ages 0-12</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                    onClick={() => setChildren(Math.max(0, children - 1))}
+                    disabled={children <= 0}
+                  >
+                    <Minus className="h-4 w-4 text-gray-600" />
+                  </Button>
+                  <span className="w-8 text-center font-medium text-gray-700">{children}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-8 w-8 border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                    onClick={() => setChildren(children + 1)}
+                    disabled={children >= 10}
+                  >
+                    <Plus className="h-4 w-4 text-gray-600" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Main Layout: Sidebar + Content */}
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar Filters */}
-          <div className="md:w-1/4 w-full bg-[#000000]/10 p-6 rounded-lg shadow-sm flex flex-col gap-6 min-w-[220px]">
-            <Input
-              placeholder="Search rooms..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-white border-none outline-none focus:outline-none focus:ring-0 ring-0 shadow-none mb-2"
-            />
-            <div>
-              <div className="font-semibold mb-2">Room Type</div>
+          <div className="md:w-1/4 w-full flex flex-col gap-6 min-w-[220px]">
+            {/* Room Type Filter */}
+            <div className="bg-gray-50 rounded-xl p-4 shadow-lg border border-gray-100">
+              <div className="font-medium text-gray-800 mb-3">Room Type</div>
               <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger className="w-full bg-white border-none outline-none focus:outline-none focus:ring-0 ring-0 shadow-none">
+                <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                   <SelectValue placeholder="Room Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -217,10 +393,29 @@ const Rooms = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <div className="font-semibold mb-2">Bed Type</div>
+
+            {/* Floor Level Filter */}
+            <div className="bg-gray-50 rounded-xl p-4 shadow-lg border border-gray-100">
+              <div className="font-medium text-gray-800 mb-3">Floor Level</div>
+              <Select value={selectedFloor} onValueChange={setSelectedFloor}>
+                <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                  <SelectValue placeholder="Floor Level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {floorOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Bed Type Filter */}
+            <div className="bg-gray-50 rounded-xl p-4 shadow-lg border border-gray-100">
+              <div className="font-medium text-gray-800 mb-3">Bed Type</div>
               <Select value={selectedBedType} onValueChange={setSelectedBedType}>
-                <SelectTrigger className="w-full bg-white border-none outline-none focus:outline-none focus:ring-0 ring-0 shadow-none">
+                <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                   <SelectValue placeholder="Bed Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -233,13 +428,15 @@ const Rooms = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <div className="font-semibold mb-2">Facilities</div>
+
+            {/* Facilities Filter */}
+            <div className="bg-gray-50 rounded-xl p-4 shadow-lg border border-gray-100">
+              <div className="font-medium text-gray-800 mb-3">Facilities</div>
               <Select
                 value={selectedFacilities}
                 onValueChange={handleFacilityChange}
               >
-                <SelectTrigger className="w-full bg-white border-none outline-none focus:outline-none focus:ring-0 ring-0 shadow-none">
+                <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                   <SelectValue placeholder="Facilities">
                     {selectedFacilities.length > 0 ? `${selectedFacilities.length} selected` : "Select facilities"}
                   </SelectValue>
@@ -262,31 +459,94 @@ const Rooms = () => {
                 </SelectContent>
               </Select>
             </div>
+
             {/* Price Range Filter */}
-            <div>
-              <div className="font-semibold mb-2">Your budget (per night)</div>
-              <div className="mb-2">
-                VND {priceRange[0].toLocaleString('vi-VN')} – VND {priceRange[1].toLocaleString('vi-VN')}{priceRange[1] === maxPrice ? '+' : ''}
+            <div className="bg-gray-50 rounded-xl p-4 shadow-lg border border-gray-100">
+              <div className="font-medium text-gray-800 mb-3">Your budget (per night)</div>
+              <div className="mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="text-sm text-gray-600">Min: {priceRange[0].toLocaleString('vi-VN')} VND</div>
+                  <div className="text-sm text-gray-600">Max: {priceRange[1].toLocaleString('vi-VN')} VND</div>
+                </div>
+                <div className="relative px-2">
+                  <Slider
+                    range
+                    min={minPrice}
+                    max={maxPrice}
+                    value={priceRange}
+                    onChange={setPriceRange}
+                    step={10000}
+                    trackStyle={[
+                      { backgroundColor: '#4f46e5', height: 4 },
+                      { backgroundColor: '#4f46e5', height: 4 }
+                    ]}
+                    handleStyle={[
+                      { 
+                        backgroundColor: '#4f46e5',
+                        borderColor: '#4f46e5',
+                        height: 20,
+                        width: 20,
+                        marginTop: -8,
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        opacity: 1,
+                        cursor: 'pointer',
+                        ':hover': {
+                          boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                        }
+                      },
+                      { 
+                        backgroundColor: '#4f46e5',
+                        borderColor: '#4f46e5',
+                        height: 20,
+                        width: 20,
+                        marginTop: -8,
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                        opacity: 1,
+                        cursor: 'pointer',
+                        ':hover': {
+                          boxShadow: '0 4px 8px rgba(0,0,0,0.2)'
+                        }
+                      }
+                    ]}
+                    railStyle={{ 
+                      backgroundColor: '#e5e7eb',
+                      height: 4,
+                      borderRadius: 2
+                    }}
+                    dotStyle={{
+                      backgroundColor: '#e5e7eb',
+                      borderColor: '#e5e7eb',
+                      height: 8,
+                      width: 8,
+                      marginTop: -2
+                    }}
+                    activeDotStyle={{
+                      backgroundColor: '#4f46e5',
+                      borderColor: '#4f46e5',
+                      height: 8,
+                      width: 8,
+                      marginTop: -2
+                    }}
+                  />
+                </div>
+                <div className="flex justify-between items-center mt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-indigo-600"></div>
+                    <span className="text-sm text-gray-600">Selected Range</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gray-200"></div>
+                    <span className="text-sm text-gray-600">Available Range</span>
+                  </div>
+                </div>
               </div>
-              <Slider
-                range
-                min={minPrice}
-                max={maxPrice}
-                value={priceRange}
-                onChange={setPriceRange}
-                trackStyle={[{ backgroundColor: '#2563eb', height: 6 }]}
-                handleStyle={[
-                  { backgroundColor: '#2563eb', borderColor: '#2563eb', height: 24, width: 24, marginTop: -9 },
-                  { backgroundColor: '#2563eb', borderColor: '#2563eb', height: 24, width: 24, marginTop: -9 }
-                ]}
-                railStyle={{ backgroundColor: '#d1d5db', height: 6 }}
-              />
             </div>
+
             {/* Sort By */}
-            <div>
-              <div className="font-semibold mb-2">Sort by</div>
+            <div className="bg-gray-50 rounded-xl p-4 shadow-lg border border-gray-100">
+              <div className="font-medium text-gray-800 mb-3">Sort by</div>
               <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger className="w-full bg-white border-none outline-none focus:outline-none focus:ring-0 ring-0 shadow-none">
+                <SelectTrigger className="w-full bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -301,10 +561,10 @@ const Rooms = () => {
           <div className="md:w-3/4 w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-0">
               {currentRooms.map((room) => (
-                <Card key={room.id} className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                <Card key={room.id} className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1" onClick={() => handleRoomClick(room.type)}>
                   <div className="aspect-video relative overflow-hidden">
                     <img
-                      src={room.image}
+                      src={getRoomImage(room.type)}
                       alt={room.name}
                       className="object-cover w-full h-full transition-transform duration-300 hover:scale-110"
                     />
@@ -418,6 +678,21 @@ const Rooms = () => {
           </div>
         </div>
       </div>
+
+      {/* Add modal component to display feedback */}
+      {isModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close" onClick={() => setIsModalOpen(false)}>&times;</span>
+            <h2>Feedback for {selectedRoomType}</h2>
+            <ul>
+              {feedback.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
