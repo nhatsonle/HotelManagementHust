@@ -9,10 +9,10 @@ const port = 3000;
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerOptions = require('./src/config/swagger.config');
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+const specs = require('./src/config/swagger.config');
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 // Nạp các module router
 const mainRoutes = require('./src/api/main.routes'); // Đường dẫn đến file mainRoutes.js
 const guestRoutes = require('./src/api/guest.routes'); // Đường dẫn đến file userRoutes.js
