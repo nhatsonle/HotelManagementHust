@@ -14,6 +14,18 @@ const rateSchema = Joi.object({
   cancellation_policy: Joi.string().max(50).required()
 });
 
+// Schema for rate updates - all fields optional
+const updateRateSchema = Joi.object({
+  deal_name: Joi.string().min(2).max(100),
+  type_id: Joi.number().integer().min(1),
+  discount: Joi.number().precision(2).min(0).max(100),
+  deal_price: Joi.number().precision(2).min(0),
+  start_date: Joi.date().iso(),
+  end_date: Joi.date().iso().min(Joi.ref('start_date')),
+  availability: Joi.number().integer().min(0),
+  cancellation_policy: Joi.string().max(50)
+});
+
 // Validation schema for query parameters
 const filterSchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
@@ -205,8 +217,8 @@ class RateService {
 
   async updateRate(id, rateData) {
     try {
-      // Validate rate data
-      const { error, value } = rateSchema.validate(rateData);
+      // Validate rate data using update schema
+      const { error, value } = updateRateSchema.validate(rateData);
       if (error) {
         throw error;
       }
