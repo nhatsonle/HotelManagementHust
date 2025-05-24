@@ -66,6 +66,12 @@ const Rooms = () => {
   }, []);
 
   useEffect(() => {
+    if (checkIn && checkOut && (adults > 0 || children > 0)) {
+      fetchRooms();
+    }
+  }, [checkIn, checkOut, adults, children]);
+
+  useEffect(() => {
     if (rooms.length > 0) {
       const prices = rooms.map(room => parseInt(room.price.replace(/\D/g, '')));
       const min = Math.max(10000, Math.min(...prices));
@@ -81,7 +87,27 @@ const Rooms = () => {
       setLoading(true);
       setError(null);
       console.log('Fetching rooms from API...');
-      const response = await axios.get('/api/rooms');
+      
+      let response;
+      if (checkIn && checkOut && (adults > 0 || children > 0)) {
+        // Format dates to YYYY-MM-DD
+        const formattedCheckIn = checkIn.toISOString().split('T')[0];
+        const formattedCheckOut = checkOut.toISOString().split('T')[0];
+        
+        // Call availability API with parameters
+        response = await axios.get(`/api/rooms/available`, {
+          params: {
+            checkin: formattedCheckIn,
+            checkout: formattedCheckOut,
+            adult: adults,
+            child: children
+          }
+        });
+      } else {
+        // Default API call without parameters
+        response = await axios.get('/api/rooms');
+      }
+      
       console.log('API Response:', response.data);
       
       if (response.data.success) {
@@ -199,10 +225,10 @@ const Rooms = () => {
       console.log(`Fetching feedback for room ID: ${roomId}`);
       const response = await axios.get(`https://hotelmanagementhust.onrender.com/api/feedback/room/${roomId}`);
       console.log('API Response:', response.data);
-      if (response.data.success) {
-        setFeedback(response.data.feedback);
+      if (response.data) {
+        setFeedback(response.data);
       } else {
-        console.error('API Error:', response.data.message);
+        console.error('API Error: No feedback data found');
       }
     } catch (err) {
       console.error('Error fetching feedback:', err);
@@ -677,18 +703,38 @@ const Rooms = () => {
 
       {/* Add modal component to display feedback */}
       {isModalOpen && (
-        <div className="modal">
-          <div className="modal-content">
-            <span className="close" onClick={() => setIsModalOpen(false)}>&times;</span>
-            <h2>Feedback for {selectedRoomType}</h2>
-            <ul>
-              {feedback.map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white/95 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto shadow-2xl transform transition-all">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-semibold">Room Feedback</h2>
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="space-y-4">
+              {feedback.length > 0 ? (
+                feedback.map((item) => (
+                  <div key={item.feedback_id} className="border-b border-gray-200 pb-4 last:border-0 hover:bg-gray-50/50 transition-colors rounded-lg p-3">
+                    <p className="text-gray-700 mb-2">{item.comment}</p>
+                    <div className="flex justify-between text-sm text-gray-500">
+                      <span>Guest #{item.guest_id}</span>
+                      <span>{new Date(item.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-500 text-center py-4">No feedback available for this room.</p>
+              )}
+            </div>
           </div>
         </div>
       )}
+
+      {console.log('Modal Opened')}
+      {console.log('Feedback:', feedback)}
     </div>
   );
 };

@@ -492,4 +492,116 @@
  *         description: Room not found
  *       400:
  *         description: Invalid status
+ */
+
+/**
+ * @swagger
+ * /api/rooms/available:
+ *   get:
+ *     summary: Get available rooms based on check-in, check-out dates and guest numbers
+ *     tags: [Rooms]
+ *     parameters:
+ *       - in: query
+ *         name: checkin
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Check-in date (YYYY-MM-DD)
+ *       - in: query
+ *         name: checkout
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Check-out date (YYYY-MM-DD)
+ *       - in: query
+ *         name: adult
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 10
+ *         description: Number of adults
+ *       - in: query
+ *         name: child
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           maximum: 10
+ *         description: Number of children
+ *     responses:
+ *       200:
+ *         description: List of available rooms
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Room'
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     filters:
+ *                       type: object
+ *                       properties:
+ *                         checkin:
+ *                           type: string
+ *                           format: date
+ *                           example: "2024-03-20"
+ *                         checkout:
+ *                           type: string
+ *                           format: date
+ *                           example: "2024-03-25"
+ *                         adult:
+ *                           type: integer
+ *                           example: 2
+ *                         child:
+ *                           type: integer
+ *                           example: 1
+ *       400:
+ *         description: Invalid query parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: "Missing required parameters: checkin, checkout, adult, child"
+ *                     status:
+ *                       type: integer
+ *                       example: 400
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: "Something went wrong!"
+ *                     status:
+ *                       type: integer
+ *                       example: 500
  */ 

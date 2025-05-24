@@ -181,6 +181,33 @@ class RoomService extends BaseService {
     return await this.delete(id);
   }
 
+  async getAvailableRooms(checkin, checkout, adult, child) {
+    // Validate input parameters
+    const validationSchema = Joi.object({
+      checkin: Joi.date().iso().required(),
+      checkout: Joi.date().iso().min(Joi.ref('checkin')).required(),
+      adult: Joi.number().integer().min(1).max(10).required(),
+      child: Joi.number().integer().min(0).max(10).required()
+    });
+
+    await validationSchema.validateAsync({ checkin, checkout, adult, child });
+
+    // Call the database function get_available_rooms
+    const results = await this.model.sequelize.query(
+      'SELECT * FROM get_available_rooms(:checkin, :checkout, :adult, :child)',
+      {
+        replacements: {
+          checkin,
+          checkout,
+          adult,
+          child
+        },
+        type: this.model.sequelize.QueryTypes.SELECT
+      }
+    );
+
+    return results;
+  }
 }
 
 module.exports = new RoomService();

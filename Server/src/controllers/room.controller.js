@@ -137,6 +137,33 @@ exports.deleteRoom = async (req, res, next) => {
   }
 };
 
+exports.getAvailableRooms = async (req, res, next) => {
+  try {
+    const { checkin, checkout, adult, child } = req.query;
+
+    if (!checkin || !checkout || !adult || !child) {
+      throw createError(400, 'Missing required parameters: checkin, checkout, adult, child');
+    }
+
+    const rooms = await roomService.getAvailableRooms(checkin, checkout, adult, child);
+
+    res.status(200).json({
+      success: true,
+      data: rooms,
+      meta: {
+        filters: {
+          checkin,
+          checkout,
+          adult,
+          child
+        }
+      }
+    });
+  } catch (err) {
+    handleError(err, next);
+  }
+};
+
 
 
 
