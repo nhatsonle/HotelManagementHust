@@ -193,11 +193,11 @@ const Rooms = () => {
     return images[type] || "https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-4.0.3"; // Default image
   };
 
-  // Function to fetch feedback for a specific room type
-  const fetchFeedback = async (roomType) => {
+  // Function to fetch feedback for a specific room
+  const fetchFeedback = async (roomId) => {
     try {
-      console.log(`Fetching feedback for room type: ${roomType}`);
-      const response = await axios.get(`/api/feedback?roomType=${roomType}`);
+      console.log(`Fetching feedback for room ID: ${roomId}`);
+      const response = await axios.get(`https://hotelmanagementhust.onrender.com/api/feedback/room/${roomId}`);
       console.log('API Response:', response.data);
       if (response.data.success) {
         setFeedback(response.data.feedback);
@@ -210,9 +210,9 @@ const Rooms = () => {
   };
 
   // Function to handle room click
-  const handleRoomClick = (roomType) => {
-    setSelectedRoomType(roomType);
-    fetchFeedback(roomType);
+  const handleRoomClick = (roomId) => {
+    setSelectedRoomType(roomId);
+    fetchFeedback(roomId);
     setIsModalOpen(true);
   };
 
@@ -557,7 +557,7 @@ const Rooms = () => {
           <div className="md:w-3/4 w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-0">
               {currentRooms.map((room) => (
-                <Card key={room.id} className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1" onClick={() => handleRoomClick(room.type)}>
+                <Card key={room.id} className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1" onClick={() => handleRoomClick(room.id)}>
                   <div className="aspect-video relative overflow-hidden">
                     <img
                       src={getRoomImage(room.type)}
