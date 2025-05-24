@@ -13,19 +13,19 @@ exports.getGuestById = async (guest_id) => {
 };
 
 // Thêm khách mới
-exports.createGuest = async (name, phone, email) => {
+exports.createGuest = async (name, phone, email, passport_number, city, region, address, zip_code) => {
   const result = await pool.query(
-    'INSERT INTO guests (name, phone, email) VALUES ($1, $2, $3) RETURNING *',
-    [name, phone, email]
+    'INSERT INTO guests (name, phone, email, passport_number, city, region, address, zip_code) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
+    [name, phone, email, passport_number, city, region, address, zip_code]
   );
   return result.rows[0];
 };
 
 // Cập nhật theo guest_id
-exports.updateGuest = async (guest_id, name, phone, email) => {
+exports.updateGuest = async (guest_id, name, phone, email, passport_number, city, region, address, zip_code) => {
   const result = await pool.query(
-    'UPDATE guests SET name = $1, phone = $2, email = $3 WHERE guest_id = $4 RETURNING *',
-    [name, phone, email, guest_id]
+    'UPDATE guests SET name = $1, phone = $2, email = $3, passport_number = $4, city = $5, region = $6, address = $7, zip_code = $8 WHERE guest_id = $9 RETURNING *',
+    [name, phone, email, passport_number, city, region, address, zip_code, guest_id]
   );
   return result.rows[0];
 };

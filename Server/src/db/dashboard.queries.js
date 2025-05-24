@@ -16,6 +16,7 @@ exports.getCurrentGuests = async () => {
   const result = await db.query(`
     SELECT COUNT(*) FROM bookings 
     WHERE CURRENT_DATE BETWEEN check_in AND check_out
+      AND status = 'Booked'
   `);
   return parseInt(result.rows[0].count);
 };
@@ -23,26 +24,31 @@ exports.getCurrentGuests = async () => {
 // Thống kê loại phòng
 exports.getRoomTypes = async () => {
   const result = await db.query(`
-    SELECT room_type, COUNT(*) FILTER (WHERE status = 'occupied') AS occupied, COUNT(*) AS total, MAX(price_per_day) AS price
-    FROM rooms
-    GROUP BY room_type
+    SELECT 
+      rt.type_name AS room_type,
+      COUNT(*) FILTER (WHERE r.room_status = 'Booked') AS occupied,
+      COUNT(*) AS total,
+      COALESCE(MAX(rates.deal_price), rt.base_price) AS price
+    FROM rooms r
+    JOIN roomtypes rt ON r.type_id = rt.type_id
+    LEFT JOIN rates ON rates.type_id = rt.type_id
+    GROUP BY rt.type_name, rt.base_price
   `);
   return result.rows;
 };
+
 
 // Phân loại phòng theo trạng thái
 exports.getRoomStatus = async () => {
   const result = await db.query(`
     SELECT 
-      COUNT(*) FILTER (WHERE status = 'occupied') AS occupied,
-      COUNT(*) FILTER (WHERE status = 'available') AS available,
-      COUNT(*) FILTER (WHERE clean_status = 'clean') AS clean,
-      COUNT(*) FILTER (WHERE clean_status = 'dirty') AS dirty,
-      COUNT(*) FILTER (WHERE inspected = TRUE) AS inspected
+      COUNT(*) FILTER (WHERE room_status = 'Booked') AS occupied,
+      COUNT(*) FILTER (WHERE room_status = 'Available') AS available
     FROM rooms
   `);
   return result.rows[0];
 };
+
 
 // Tỷ lệ phòng sử dụng theo tháng
 exports.getMonthlyOccupancy = async () => {
