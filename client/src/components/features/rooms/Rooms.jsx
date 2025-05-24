@@ -12,10 +12,6 @@ import { Checkbox } from "../../ui/checkbox";
 import { Label } from "../../ui/label";
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import { format } from 'date-fns';
-import { Calendar as CalendarComponent } from "../../ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "../../ui/popover";
-import { cn } from "@/lib/utils";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
