@@ -74,6 +74,50 @@
  *         created_at: "2024-03-15T10:00:00Z"
  *         updated_at: "2024-03-15T10:00:00Z"
  * 
+ *     RateUpdate:
+ *       type: object
+ *       properties:
+ *         deal_name:
+ *           type: string
+ *           minLength: 2
+ *           maxLength: 100
+ *           description: Name of the deal/rate
+ *         type_id:
+ *           type: integer
+ *           minimum: 1
+ *           description: ID of the room type this rate applies to
+ *         discount:
+ *           type: number
+ *           format: float
+ *           minimum: 0
+ *           maximum: 100
+ *           description: Discount percentage
+ *         deal_price:
+ *           type: number
+ *           format: float
+ *           minimum: 0
+ *           description: Special price for this deal
+ *         start_date:
+ *           type: string
+ *           format: date
+ *           description: Start date of the deal
+ *         end_date:
+ *           type: string
+ *           format: date
+ *           description: End date of the deal
+ *         availability:
+ *           type: integer
+ *           minimum: 0
+ *           description: Number of rooms available at this rate
+ *         cancellation_policy:
+ *           type: string
+ *           maxLength: 50
+ *           description: Cancellation policy for this rate
+ *       example:
+ *         deal_name: "Summer Special Updated"
+ *         discount: 25.00
+ *         availability: 15
+ * 
  *     RateResponse:
  *       type: object
  *       properties:
@@ -497,7 +541,11 @@
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Rate'
+ *             $ref: '#/components/schemas/RateUpdate'
+ *           example:
+ *             deal_name: "Summer Special Updated"
+ *             discount: 25.00
+ *             availability: 15
  *     responses:
  *       200:
  *         description: Rate updated successfully
@@ -511,65 +559,12 @@
  *                   example: true
  *                 data:
  *                   $ref: '#/components/schemas/Rate'
- *                 message:
- *                   type: string
- *                   example: Rate updated successfully
  *       400:
  *         description: Invalid request body
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 error:
- *                   type: object
- *                   properties:
- *                     message:
- *                       type: string
- *                     status:
- *                       type: integer
- *                       example: 400
  *       404:
  *         description: Rate not found
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 error:
- *                   type: object
- *                   properties:
- *                     message:
- *                       type: string
- *                       example: Rate not found
- *                     status:
- *                       type: integer
- *                       example: 404
  *       500:
  *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: false
- *                 error:
- *                   type: object
- *                   properties:
- *                     message:
- *                       type: string
- *                       example: Something went wrong!
- *                     status:
- *                       type: integer
- *                       example: 500
  * 
  *   delete:
  *     summary: Delete a rate by ID
