@@ -10,9 +10,9 @@ const apiRouter = express.Router();
 
 const app = express();
 
-app.use(cors({
-  origin: '*' // or '*' to allow all origins
-}));
+  app.use(cors({
+    origin: '*' // or '*' to allow all origins
+  }));
 
 // Mount các router con
 apiRouter.use('/rooms', roomRouter);
