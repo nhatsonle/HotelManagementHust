@@ -4,6 +4,7 @@ const swaggerSpecs = require('./src/config/swagger.config');
 const app = express();
 const apiRouter = require('./src/api/index');
 const PORT = process.env.PORT || 3000;
+const cors = require('cors');
 
 // ✅ Enable CORS for all origins (or restrict to frontend)
 app.use(cors({
