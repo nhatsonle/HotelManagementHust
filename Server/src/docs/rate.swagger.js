@@ -542,10 +542,37 @@
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/RateUpdate'
- *           example:
- *             deal_name: "Summer Special Updated"
- *             discount: 25.00
- *             availability: 15
+ *           examples:
+ *             updateNameAndPrice:
+ *               summary: Update deal name and price
+ *               value:
+ *                 deal_name: "Summer Special 2024"
+ *                 deal_price: 750.00
+ *             updateDiscountAndAvailability:
+ *               summary: Update discount and availability
+ *               value:
+ *                 discount: 25.00
+ *                 availability: 15
+ *             updateDates:
+ *               summary: Update deal dates
+ *               value:
+ *                 start_date: "2024-07-01"
+ *                 end_date: "2024-09-30"
+ *             updatePolicy:
+ *               summary: Update cancellation policy
+ *               value:
+ *                 cancellation_policy: "Free cancellation up to 48h before"
+ *             fullUpdate:
+ *               summary: Update all fields
+ *               value:
+ *                 deal_name: "Summer Special 2024"
+ *                 type_id: 2
+ *                 discount: 25.00
+ *                 deal_price: 750.00
+ *                 start_date: "2024-07-01"
+ *                 end_date: "2024-09-30"
+ *                 availability: 15
+ *                 cancellation_policy: "Free cancellation up to 48h before"
  *     responses:
  *       200:
  *         description: Rate updated successfully
