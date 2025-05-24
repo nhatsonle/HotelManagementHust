@@ -42,4 +42,27 @@
  *                 $ref: '#/components/schemas/Feedback'
  *       500:
  *         description: An error occurred while fetching feedback.
+ *
+ * /api/feedback/room/{roomId}:
+ *   get:
+ *     summary: Retrieve feedback for a specific room
+ *     description: Retrieve feedback entries associated with a specific room ID.
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the room to retrieve feedback for.
+ *     responses:
+ *       200:
+ *         description: A list of feedback for the specified room.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Feedback'
+ *       500:
+ *         description: An error occurred while fetching feedback for the specified room.
  */ 
