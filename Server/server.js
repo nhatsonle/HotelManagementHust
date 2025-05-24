@@ -6,14 +6,11 @@ const apiRouter = require('./src/api/index');
 const PORT = process.env.PORT || 3000;
 const cors = require('cors');
 
-// ✅ Enable CORS for all origins (or restrict to frontend)
 app.use(cors({
   origin: '*', // or '*' for dev
   optionsSuccessStatus: 200
 }));
 
-// ✅ Handle preflight requests
-app.options('*', cors());
 
 
 app.use(express.json());
