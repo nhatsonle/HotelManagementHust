@@ -94,6 +94,13 @@ const Rooms = () => {
         const formattedCheckIn = checkIn.toISOString().split('T')[0];
         const formattedCheckOut = checkOut.toISOString().split('T')[0];
         
+        console.log('Calling availability API with params:', {
+          checkin: formattedCheckIn,
+          checkout: formattedCheckOut,
+          adult: adults,
+          child: children
+        });
+        
         // Call availability API with parameters
         response = await axios.get(`/api/rooms/available`, {
           params: {
@@ -104,30 +111,44 @@ const Rooms = () => {
           }
         });
       } else {
+        console.log('Calling default rooms API');
         // Default API call without parameters
         response = await axios.get('/api/rooms');
       }
       
-      console.log('API Response:', response.data);
+      console.log('Raw API Response:', response);
+      console.log('API Response Data:', response.data);
       
       if (response.data.success) {
+        console.log('API Response Data.data:', response.data.data);
         // Transform API data to match UI requirements
         const transformedRooms = response.data.data.map(room => {
-          console.log('Raw room data:', room);
-          console.log('Bed type:', room.bed_type);
-          return {
-            id: room.room_id,
-            name: room.roomType.type_name,
-            type: room.roomType.type_name.toLowerCase(),
-            price: Math.round(room.roomType.base_price).toLocaleString('vi-VN'),
-            capacity: room.adult_number + room.child_number,
-            amenities: room.room_facility ? room.room_facility.split(', ') : [],
+          console.log('Processing room:', room);
+          
+          // Handle both API response formats
+          const roomType = room.roomType || room;
+          console.log('Room type object:', roomType);
+          
+          const typeName = roomType.type_name || roomType.name || 'Standard Room';
+          const basePrice = roomType.base_price || roomType.price || 0;
+          
+          const transformedRoom = {
+            id: room.room_id || room.id || Math.random().toString(36).substr(2, 9),
+            name: typeName,
+            type: (typeName || 'standard').toLowerCase(),
+            price: Math.round(basePrice).toLocaleString('vi-VN'),
+            capacity: (room.adult_number || room.adults || 0) + (room.child_number || room.children || 0),
+            amenities: (room.room_facility || room.amenities || '').split(', ').filter(Boolean),
             image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-4.0.3", // Default image
-            available: room.room_status === 'Available',
-            bed_type: room.bed_type
+            available: room.room_status === 'Available' || room.available,
+            bed_type: room.bed_type || 'Standard'
           };
+          
+          console.log('Transformed room:', transformedRoom);
+          return transformedRoom;
         });
-        console.log('Transformed rooms:', transformedRooms);
+        
+        console.log('Final transformed rooms:', transformedRooms);
         setRooms(transformedRooms);
 
         // Extract unique facilities and bed types from all rooms

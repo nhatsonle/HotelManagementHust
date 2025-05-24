@@ -192,9 +192,11 @@ class RoomService extends BaseService {
 
     await validationSchema.validateAsync({ checkin, checkout, adult, child });
 
-    // Call the database function get_available_rooms
+    // Call the database function get_available_rooms and include room type information
     const results = await this.model.sequelize.query(
-      'SELECT * FROM get_available_rooms(:checkin, :checkout, :adult, :child)',
+      `SELECT r.*, rt.type_name, rt.base_price, rt.cancellation_policy 
+       FROM get_available_rooms(:checkin, :checkout, :adult, :child) r
+       LEFT JOIN roomtypes rt ON r.type_id = rt.type_id`,
       {
         replacements: {
           checkin,
@@ -206,7 +208,23 @@ class RoomService extends BaseService {
       }
     );
 
-    return results;
+    // Transform the results to match the expected format with roomType object
+    const transformedResults = results.map(room => {
+      // Extract room type fields
+      const { type_name, base_price, cancellation_policy, ...roomData } = room;
+      
+      return {
+        ...roomData,
+        roomType: {
+          type_id: room.type_id,
+          type_name,
+          base_price,
+          cancellation_policy
+        }
+      };
+    });
+
+    return transformedResults;
   }
 }
 
