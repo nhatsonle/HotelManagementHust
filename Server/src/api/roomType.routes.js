@@ -2,21 +2,15 @@
 
 const express = require('express');
 const router = express.Router();
-const roomTypeController = require('./roomType.controller');
+const roomTypeController = require('../controllers/roomType.controller');
 
-// Route để lấy danh sách loại phòng
-router.get('/', roomTypeController.getAllRoomTypes);
+router.route('/')
+  .get(roomTypeController.getRoomTypes)         // GET /api/room-types
+  .post(roomTypeController.createRoomType);     // POST /api/room-types
 
-// Route để lấy thông tin chi tiết của một loại phòng
-router.get('/:id', roomTypeController.getRoomTypeById);
-
-// Route để tạo mới một loại phòng
-router.post('/', roomTypeController.createRoomType);
-
-// Route để cập nhật thông tin một loại phòng
-router.put('/:id', roomTypeController.updateRoomType);
-
-// Route để xóa một loại phòng
-router.delete('/:id', roomTypeController.deleteRoomType);
+router.route('/:id')
+  .get(roomTypeController.getRoomTypeById)      // GET /api/room-types/:id
+  .put(roomTypeController.updateRoomType)       // PUT /api/room-types/:id
+  .delete(roomTypeController.deleteRoomType);   // DELETE /api/room-types/:id
 
 module.exports = router;

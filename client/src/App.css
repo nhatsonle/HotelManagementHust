@@ -1,1 +1,23 @@
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Dancing+Script:wght@400..700&display=swap');
+
+/* Hide default calendar icon in Chrome, Safari, Edge, Opera */
+.custom-date-input::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  display: none;
+}
+/* Hide default calendar icon in Firefox */
+.custom-date-input[type="date"]::-moz-calendar-picker-indicator {
+  opacity: 0;
+  display: none;
+}
+/* Hide default calendar icon in IE/Edge */
+.custom-date-input::-ms-input-placeholder {
+  opacity: 0;
+  display: none;
+}
+
+.datepicker-fullwidth,
+.datepicker-fullwidth > input {
+  width: 100% !important;
+  min-width: 0;
+}

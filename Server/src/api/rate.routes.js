@@ -1,19 +1,15 @@
 // Định nghĩa routes cho quản lý giá/khuyến mãi
-
 const express = require('express');
-const router = express.Router();
-const rateController = require('./rate.controller');
+const router  = express.Router();
+const rateController = require('../controllers/rate.controller');
 
-// Route để lấy danh sách giá/khuyến mãi
-router.get('/', rateController.getRates);
+router.route('/')
+  .get(rateController.getRates)        // GET  /api/rates
+  .post(rateController.createRate);    // POST /api/rates
 
-// Route để tạo mới giá/khuyến mãi
-router.post('/', rateController.createRate);
-
-// Route để cập nhật giá/khuyến mãi
-router.put('/:id', rateController.updateRate);
-
-// Route để xóa giá/khuyến mãi
-router.delete('/:id', rateController.deleteRate);
+router.route('/:id')
+  .get(rateController.getRateById)     // GET    /api/rates/:id
+  .put(rateController.updateRate)      // PUT    /api/rates/:id
+  .delete(rateController.deleteRate);  // DELETE /api/rates/:id
 
 module.exports = router;

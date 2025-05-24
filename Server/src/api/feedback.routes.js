@@ -1,4 +1,5 @@
 const express = require('express');
+const Feedback = require('../db/Feedback.model');
 const router = express.Router();
 const controller = require('../controllers/feedback.controller');
 
