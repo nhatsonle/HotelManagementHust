@@ -54,8 +54,7 @@ const bookingController = {
           zip_code: guest_info.zip_code,
         });
       } else {
-        // Tùy chọn: Cập nhật thông tin khách nếu đã tồn tại và có thông tin mới
-        // Ví dụ: guest.phone = guest_info.phone || guest.phone; await guest.save({ transaction: t });
+        
       }
 
 
@@ -187,7 +186,7 @@ const bookingController = {
   },
   getAllBooking: async (req, res, next) => {
     try {
-      const bookings = await Booking.findAll(); // Không cần transaction ở đây
+      const bookings = await Booking.findAll(); 
       res.status(200).json({ bookings });
     } catch (error) {
       console.error('Lỗi khi lấy tất cả booking:', error);
@@ -402,7 +401,7 @@ confirmBooking: async (req, res, next) => {
       // if (payment_details) { /* Xử lý, lưu payment_details nếu cần */ }
       
 
-      await booking.save({ transaction: t });
+      await booking.save();
 
 
       if(booking.room_id)
