@@ -1,12 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { getGuests } from '../services/api2';
+import { getRooms } from '../services/api';
 
 const EditBooking = ({ booking, onClose, onSave, onDelete }) => {
   const [formData, setFormData] = useState({ ...booking });
+  const [guests, setGuests] = useState([]);
+  const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
     setFormData({ ...booking });
   }, [booking]);
+
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+      try {
+        const [guestRes, roomRes] = await Promise.all([
+          getGuests(),
+          getRooms({ limit: 100 }),
+        ]);
+        setGuests(guestRes?.data || []);
+        setRooms(roomRes?.data?.data || []);
+      } catch (err) {
+        console.error('Failed to fetch dropdown data:', err);
+      }
+    };
+    fetchDropdownData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,28 +70,41 @@ const EditBooking = ({ booking, onClose, onSave, onDelete }) => {
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-[#676f86] font-semibold mb-1">Guest ID</label>
-              <input
-                type="number"
+              <label className="block text-[#676f86] font-semibold mb-1">Guest</label>
+              <select
                 name="guest_id"
                 value={formData.guest_id || ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-[#ddd] rounded"
                 required
-              />
+              >
+                <option value="">Select guest</option>
+                {guests.map(guest => (
+                  <option key={guest.guest_id} value={guest.guest_id}>
+                    {guest.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
-              <label className="block text-[#676f86] font-semibold mb-1">Room ID</label>
-              <input
-                type="number"
+              <label className="block text-[#676f86] font-semibold mb-1">Room</label>
+              <select
                 name="room_id"
                 value={formData.room_id || ''}
                 onChange={handleChange}
                 className="w-full p-2 border border-[#ddd] rounded"
                 required
-              />
+              >
+                <option value="">Select room</option>
+                {rooms.map(room => (
+                  <option key={room.room_id} value={room.room_id}>
+                    Room {room.room_number}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-[#676f86] font-semibold mb-1">Check-In</label>
@@ -96,6 +129,7 @@ const EditBooking = ({ booking, onClose, onSave, onDelete }) => {
               />
             </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-[#676f86] font-semibold mb-1">Total Amount</label>
@@ -120,6 +154,7 @@ const EditBooking = ({ booking, onClose, onSave, onDelete }) => {
               />
             </div>
           </div>
+
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-[#676f86] font-semibold mb-1">Status</label>
@@ -132,7 +167,7 @@ const EditBooking = ({ booking, onClose, onSave, onDelete }) => {
               >
                 <option value="">Select status</option>
                 <option value="Booked">Booked</option>
-                <option value="Awaiting Payment">Awaiting Payment</option>
+                <option value="Awaiting-Payment">Awaiting-Payment</option>
                 <option value="Cancelled">Cancelled</option>
                 <option value="Checked-out">Checked-out</option>
               </select>
@@ -149,6 +184,7 @@ const EditBooking = ({ booking, onClose, onSave, onDelete }) => {
               />
             </div>
           </div>
+
           <div className="mb-4">
             <label className="block text-[#676f86] font-semibold mb-1">Children</label>
             <input

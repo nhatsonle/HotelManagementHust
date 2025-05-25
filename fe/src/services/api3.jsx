@@ -1,20 +1,18 @@
-// services/api3.jsx
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000/api";
+const BASE_URL = "https://hotelmanagementhust-m6i2.onrender.com/api";
 
 // GET: danh sách bookings
 export const getBookings = async (params = {}) => {
   try {
     const response = await axios.get(`${BASE_URL}/bookings`, { params });
-    return response.data.booking || []; // Trả về mảng bookings
+    return response.data.bookings || []; // ✅ Sửa đúng key từ "booking" -> "bookings"
   } catch (error) {
     console.error("Error fetching bookings:", error);
     throw error;
   }
 };
 
-// PUT: cập nhật booking
 export const updateBooking = async (bookingId, data) => {
   try {
     const response = await axios.put(`${BASE_URL}/bookings/${bookingId}`, data);
@@ -25,7 +23,7 @@ export const updateBooking = async (bookingId, data) => {
   }
 };
 
-// DELETE: xoá booking
+// DELETE: xóa booking
 export const deleteBooking = async (bookingId) => {
   try {
     const response = await axios.delete(`${BASE_URL}/bookings/${bookingId}`);

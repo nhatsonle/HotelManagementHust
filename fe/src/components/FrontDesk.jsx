@@ -3,12 +3,15 @@ import { getBookings } from "../services/api3";
 import { getGuests } from "../services/api2";
 import { getRooms } from "../services/api";
 import ellipsisVertical from "../assets/ellipsis-vertical.svg";
+import EditBooking from "./EditBooking";
+import { deleteBooking } from "../services/api3"; 
 
 const FrontDesk = () => {
   const [bookings, setBookings] = useState([]);
   const [guests, setGuests] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const bookingsPerPage = 8;
@@ -82,7 +85,7 @@ const FrontDesk = () => {
   const statusStyles = {
     Cancelled: "text-[#e74c3c] bg-[#fde8e8]",
     Booked: "text-[#51cc95] bg-[#e7f8f0]",
-    "Awaiting Payment": "text-[#f2ab4f] bg-[#fdf4e5]",
+    "Awaiting-Payment": "text-[#f2ab4f] bg-[#fdf4e5]",
     "Checked-out": "text-[#5a9cf3] bg-[#e9f1fe]",
   };
 
@@ -148,7 +151,10 @@ const FrontDesk = () => {
                       </span>
                     </td>
                     <td className="border-b px-3 py-2">
-                      <button onClick={() => setSelectedBooking(booking)}>
+                      <button onClick={() => {
+                        setSelectedBooking(booking);
+                        setIsEditing(true);
+                      }}>
                         <img src={ellipsisVertical} alt="Options" className="w-5 h-5 cursor-pointer" />
                       </button>
                     </td>
@@ -189,31 +195,32 @@ const FrontDesk = () => {
             </button>
           </div>
 
-          {/* Popup Detail */}
-          {selectedBooking && (
-            <div className="fixed inset-0 z-50 flex justify-center items-center bg-[#00000099]">
-              <div className="bg-white p-5 rounded-lg shadow-lg w-[500px] max-w-full max-h-[90vh] overflow-auto">
-                <h2 className="text-xl font-bold mb-4">Booking Details</h2>
-                <p><strong>Booking ID:</strong> {selectedBooking.booking_id}</p>
-                <p><strong>Guest:</strong> {getGuestName(selectedBooking.guest_id)}</p>
-                <p><strong>Room:</strong> {getRoomNumber(selectedBooking.room_id)}</p>
-                <p><strong>Check-In:</strong> {formatDate(selectedBooking.check_in)}</p>
-                <p><strong>Check-Out:</strong> {formatDate(selectedBooking.check_out)}</p>
-                <p><strong>Total Amount:</strong> {parseInt(selectedBooking.total_amount).toLocaleString()} VND</p>
-                <p><strong>Amount Paid:</strong> {parseInt(selectedBooking.amount_paid).toLocaleString()} VND</p>
-                <p><strong>Status:</strong> {selectedBooking.status}</p>
-                <p><strong>Adults:</strong> {selectedBooking.num_adults ?? "N/A"}</p>
-                <p><strong>Children:</strong> {selectedBooking.num_children ?? "N/A"}</p>
-                <div className="ml-auto flex gap-3 mt-4 justify-end">
-                  <button
-                    className="px-4 py-2 bg-[#95a5a6] text-white rounded font-bold hover:bg-[#7f8c8d]"
-                    onClick={() => setSelectedBooking(null)}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </div>
+          {/* EditBooking Popup */}
+          {isEditing && selectedBooking && (
+              <EditBooking
+              booking={selectedBooking}
+              onClose={() => {
+                setIsEditing(false);
+                setSelectedBooking(null);
+              }}
+              onSave={(updatedData) => {
+                setBookings((prev) =>
+                  prev.map((b) =>
+                    b.booking_id === selectedBooking.booking_id ? { ...b, ...updatedData } : b
+                  )
+                );
+                setIsEditing(false);
+                setSelectedBooking(null);
+              }}
+              onDelete={async (bookingId) => {
+                try {
+                  await deleteBooking(bookingId);
+                  setBookings((prev) => prev.filter((b) => b.booking_id !== bookingId));
+                } catch (err) {
+                  console.error("Failed to delete booking:", err);
+                }
+              }}
+            />
           )}
         </>
       )}
