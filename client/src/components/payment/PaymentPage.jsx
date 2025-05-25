@@ -52,7 +52,7 @@ function PaymentPage() {
     if (Object.keys(errors).length > 0) return;
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/bookings/${bookingId}/confirm`, {
+      const response = await fetch(`https://hotelmanagementhust-m6i2.onrender.com/api/bookings/${bookingId}/confirm`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
       });

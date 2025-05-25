@@ -39,7 +39,7 @@ const bookingController = {
 
       // ----- 2. Xử lý thông tin Khách (Guest) - Tìm hoặc Tạo -----
       let guest;
-      guest = await Guest.findOne({ where: { email: guest_info.email }, transaction: t });
+      guest = await Guest.findOne({ where: { email: guest_info.email }});
 
       if (!guest) {
         guest = await Guest.create({

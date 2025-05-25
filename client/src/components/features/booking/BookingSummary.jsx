@@ -9,7 +9,7 @@ function CancelBookingButton({ bookingId, onSuccess, onError, disabled }) {
   const handleCancel = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.patch(`http://localhost:3000/api/bookings/${bookingId}/cancel`);
+      const response = await axios.patch(`https://hotelmanagementhust-m6i2.onrender.com/api/bookings/${bookingId}/cancel`);
       if (response.status === 200 && response.data.booking.status === 'Cancelled') {
         onSuccess('Cancel room reservation successfully!');
       } else {
@@ -40,7 +40,7 @@ function ConfirmBookingButton({bookingId, onClick, disabled }) {
   const handleConfirm = async () => {
     setIsLoading(true);
     try {
-    const response = await axios.patch(`http://localhost:3000/api/bookings/${bookingId}/confirm`);
+    const response = await axios.patch(`https://hotelmanagementhust-m6i2.onrender.com/api/bookings/${bookingId}/confirm`);
       if (response.status === 200 && response.data.booking.status === 'Booked') {
         onSuccess('Create a new room reservation successfully!');
       } else {
@@ -111,7 +111,7 @@ function BookingSummary() {
     setSuccessMsg('');
     try {
       const booking_id = bookingData.booking.booking_id;
-      const response = await axios.patch(`http://localhost:3000/api/bookings/${booking_id}/confirm`);
+      const response = await axios.patch(`https://hotelmanagementhust-m6i2.onrender.com/api/bookings/${bookingId}/confirm`);
       if (response.status === 200 && response.data.booking.status === 'Booked') {
         setSuccessMsg('Create a new room reservation successfully!');
         setBookingData(prev => ({
