@@ -5,6 +5,7 @@ const { sequelize } = require('../db');
 const { Op } = require('sequelize');
 const createError = require('http-errors');
 const Joi = require('joi');
+const crypto = require('crypto');
 
 // Validation schema for sign up
 const signUpSchema = Joi.object({
@@ -23,6 +24,31 @@ const signUpSchema = Joi.object({
 const signInSchema = Joi.object({
   username: Joi.string().required(),
   password: Joi.string().required()
+});
+
+// Validation schema for change password
+const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string().required(),
+  newPassword: Joi.string().min(6).required()
+    .messages({
+      'string.min': 'New password must be at least 6 characters long',
+      'any.required': 'New password is required'
+    })
+});
+
+// Validation schema for reset password request
+const resetPasswordRequestSchema = Joi.object({
+  email: Joi.string().email().required()
+});
+
+// Validation schema for reset password confirmation
+const resetPasswordConfirmSchema = Joi.object({
+  token: Joi.string().required(),
+  newPassword: Joi.string().min(6).required()
+    .messages({
+      'string.min': 'New password must be at least 6 characters long',
+      'any.required': 'New password is required'
+    })
 });
 
 // Generate JWT token
@@ -351,9 +377,202 @@ const signOut = async (req, res) => {
   }
 };
 
+// Change password controller
+const changePassword = async (req, res) => {
+  try {
+    // Validate request body
+    const { error, value } = changePasswordSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: error.details[0].message,
+          status: 400
+        }
+      });
+    }
+
+    const { currentPassword, newPassword } = value;
+    const userId = req.user.user_id; // Get user ID from the authenticated request
+
+    // Find user
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          message: 'User not found',
+          status: 404
+        }
+      });
+    }
+
+    // Verify current password
+    const isValidPassword = await user.comparePassword(currentPassword);
+    if (!isValidPassword) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Current password is incorrect',
+          status: 400
+        }
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(newPassword, salt);
+
+    // Update password
+    await user.update({ password_hash: passwordHash });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password changed successfully'
+    });
+
+  } catch (error) {
+    console.error('Change password error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: 'Something went wrong!',
+        status: 500
+      }
+    });
+  }
+};
+
+// Request password reset
+const requestPasswordReset = async (req, res) => {
+  try {
+    // Validate request body
+    const { error, value } = resetPasswordRequestSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: error.details[0].message,
+          status: 400
+        }
+      });
+    }
+
+    const { email } = value;
+
+    // Find user by email
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      // Return success even if user not found to prevent email enumeration
+      return res.status(200).json({
+        success: true,
+        message: 'If an account exists with this email, you will receive password reset instructions'
+      });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // Token valid for 1 hour
+
+    // Store reset token in user record
+    await user.update({
+      reset_token: resetToken,
+      reset_token_expiry: resetTokenExpiry
+    });
+
+    // TODO: Send email with reset link
+    // In a real application, you would send an email with a link like:
+    // `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`
+    console.log('Reset token:', resetToken); // For development only
+
+    return res.status(200).json({
+      success: true,
+      message: 'If an account exists with this email, you will receive password reset instructions'
+    });
+
+  } catch (error) {
+    console.error('Request password reset error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: 'Something went wrong!',
+        status: 500
+      }
+    });
+  }
+};
+
+// Confirm password reset
+const confirmPasswordReset = async (req, res) => {
+  try {
+    // Validate request body
+    const { error, value } = resetPasswordConfirmSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: error.details[0].message,
+          status: 400
+        }
+      });
+    }
+
+    const { token, newPassword } = value;
+
+    // Find user with valid reset token
+    const user = await User.findOne({
+      where: {
+        reset_token: token,
+        reset_token_expiry: {
+          [Op.gt]: new Date()
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: 'Invalid or expired reset token',
+          status: 400
+        }
+      });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(newPassword, salt);
+
+    // Update password and clear reset token
+    await user.update({
+      password_hash: passwordHash,
+      reset_token: null,
+      reset_token_expiry: null
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password has been reset successfully'
+    });
+
+  } catch (error) {
+    console.error('Confirm password reset error:', error);
+    return res.status(500).json({
+      success: false,
+      error: {
+        message: 'Something went wrong!',
+        status: 500
+      }
+    });
+  }
+};
+
 module.exports = {
   signUp,
   signIn,
   signOut,
-  resetPassword
+  resetPassword,
+  requestPasswordReset,
+  confirmPasswordReset,
+  changePassword
 };

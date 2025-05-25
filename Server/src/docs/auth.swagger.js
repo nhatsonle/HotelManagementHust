@@ -116,7 +116,33 @@
  *           example: true
  *         message:
  *           type: string
- *           example: Password reset instructions sent to your email
+ *           example: If an account exists with this email, you will receive password reset instructions
+ * 
+ *     ResetPasswordConfirmRequest:
+ *       type: object
+ *       required:
+ *         - token
+ *         - newPassword
+ *       properties:
+ *         token:
+ *           type: string
+ *           description: Password reset token received via email
+ *           example: "a1b2c3d4e5f6g7h8i9j0..."
+ *         newPassword:
+ *           type: string
+ *           format: password
+ *           description: New password (min 6 characters)
+ *           example: "newPassword123"
+ * 
+ *     ResetPasswordConfirmResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Password has been reset successfully
  * 
  *     UserUpdateRequest:
  *       type: object
@@ -255,6 +281,33 @@
  *               type: integer
  *               example: 400
  * 
+ *     ChangePasswordRequest:
+ *       type: object
+ *       required:
+ *         - currentPassword
+ *         - newPassword
+ *       properties:
+ *         currentPassword:
+ *           type: string
+ *           format: password
+ *           description: User's current password
+ *           example: currentPassword123
+ *         newPassword:
+ *           type: string
+ *           format: password
+ *           description: User's new password (min 6 characters)
+ *           example: newPassword123
+ * 
+ *     ChangePasswordResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Password changed successfully
+ * 
  * tags:
  *   - name: Authentication
  *     description: Authentication endpoints for user management
@@ -353,12 +406,12 @@
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  * 
- * /api/auth/reset-password:
+ * /api/auth/request-reset-password:
  *   post:
  *     tags:
  *       - Authentication
  *     summary: Request password reset
- *     description: Send password reset instructions to user's email
+ *     description: Request a password reset token to be sent to the user's email
  *     requestBody:
  *       required: true
  *       content:
@@ -367,13 +420,59 @@
  *             $ref: '#/components/schemas/ResetPasswordRequest'
  *     responses:
  *       200:
- *         description: Password reset instructions sent
+ *         description: Reset instructions sent if account exists
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ResetPasswordResponse'
  *       400:
  *         description: Invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ * 
+ * /api/auth/change-password:
+ *   post:
+ *     tags:
+ *       - Authentication
+ *     summary: Change user password
+ *     description: Change the password for the currently authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ChangePasswordRequest'
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ChangePasswordResponse'
+ *       400:
+ *         description: Invalid input or current password is incorrect
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
