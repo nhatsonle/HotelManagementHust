@@ -111,7 +111,6 @@ const Rooms = () => {
           child: children
         });
         
-        // Call availability API with parameters
         response = await axios.get(`https://hotelmanagementhust.onrender.com/api/rooms/available`, {
           params: {
             checkin: formattedCheckIn,
@@ -122,8 +121,14 @@ const Rooms = () => {
         });
       } else {
         console.log('Calling default rooms API');
-        // Default API call without parameters
-        response = await axios.get('https://hotelmanagementhust.onrender.com/api/rooms');
+        // Default API call with pagination parameters
+        response = await axios.get('https://hotelmanagementhust.onrender.com/api/rooms', {
+          params: {
+            page: 1,
+            limit: 100,
+            sort: 'room_number'
+          }
+        });
       }
       
       console.log('Raw API Response:', response);
@@ -131,6 +136,8 @@ const Rooms = () => {
       
       if (response.data.success) {
         console.log('API Response Data.data:', response.data.data);
+        console.log('Total rooms from API:', response.data.data.length);
+        
         // Transform API data to match UI requirements
         const transformedRooms = response.data.data.map(room => {
           console.log('Processing room:', room);
@@ -142,20 +149,26 @@ const Rooms = () => {
           const typeName = roomType.type_name || roomType.name || 'Standard Room';
           const basePrice = roomType.base_price || roomType.price || 0;
           
+          // Ensure amenities is always an array
+          const amenities = (room.room_facility || room.amenities || '')
+              .split(',')
+              .map(item => item.trim())
+              .filter(Boolean);
+          
           const transformedRoom = {
             id: room.room_id || room.id || Math.random().toString(36).substr(2, 9),
             name: typeName,
             type: (typeName || 'standard').toLowerCase(),
             price: Math.round(basePrice).toLocaleString('vi-VN'),
             capacity: (room.adult_number || room.adults || 0) + (room.child_number || room.children || 0),
-            amenities: (room.room_facility || room.amenities || '').split(', ').filter(Boolean),
-            image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-4.0.3", // Default image
+            amenities: amenities,
+            image: "https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-4.0.3",
             available: room.room_status === 'Available' || room.available,
             bed_type: room.bed_type || 'Standard',
-            room_number: room.room_number,
-            room_floor: room.room_floor,
-            adult_number: room.adult_number,
-            child_number: room.child_number,
+            room_number: room.room_number || 'N/A',
+            room_floor: parseInt(room.room_floor) || 1,
+            adult_number: room.adult_number || room.adults || 0,
+            child_number: room.child_number || room.children || 0,
             roomType: room.roomType
           };
           
@@ -164,6 +177,7 @@ const Rooms = () => {
         });
         
         console.log('Final transformed rooms:', transformedRooms);
+        console.log('Total transformed rooms:', transformedRooms.length);
         setRooms(transformedRooms);
 
         // Extract unique facilities and bed types from all rooms
@@ -200,17 +214,33 @@ const Rooms = () => {
   };
 
   const filteredRooms = rooms.filter(room => {
-    const price = parseInt(room.price.replace(/\D/g, ''));
+    // More robust price parsing
+    const price = parseInt(room.price.replace(/[^0-9]/g, '')) || 0;
     const matchesPrice = price >= priceRange[0] && price <= priceRange[1];
-    const matchesType = selectedType === 'all' || room.type === selectedType;
-    const matchesBedType = selectedBedType === 'all' || room.bed_type === selectedBedType;
+    
+    // Case-insensitive type matching
+    const matchesType = selectedType === 'all' || 
+        room.type?.toLowerCase() === selectedType.toLowerCase();
+    
+    // Case-insensitive bed type matching
+    const matchesBedType = selectedBedType === 'all' || 
+        room.bed_type?.toLowerCase() === selectedBedType.toLowerCase();
+    
+    // Require ALL selected facilities to be present
     const matchesFacilities = selectedFacilities.length === 0 || 
-      selectedFacilities.every(facility => room.amenities.includes(facility));
+        selectedFacilities.every(facility => 
+            room.amenities?.some(amenity => 
+                amenity.toLowerCase().includes(facility.toLowerCase())
+            )
+        );
+    
+    // Floor matching with null checks
+    const roomFloor = parseInt(room.room_floor) || 0;
     const matchesFloor = selectedFloor === 'all' || 
-      (selectedFloor === '1-5' && room.room_floor >= 1 && room.room_floor <= 5) ||
-      (selectedFloor === '6-10' && room.room_floor >= 6 && room.room_floor <= 10) ||
-      (selectedFloor === '11-15' && room.room_floor >= 11 && room.room_floor <= 15) ||
-      (selectedFloor === '16+' && room.room_floor >= 16);
+        (selectedFloor === '1-5' && roomFloor >= 1 && roomFloor <= 5) ||
+        (selectedFloor === '6-10' && roomFloor >= 6 && roomFloor <= 10) ||
+        (selectedFloor === '11-15' && roomFloor >= 11 && roomFloor <= 15) ||
+        (selectedFloor === '16+' && roomFloor >= 16);
     
     return matchesPrice && matchesType && matchesBedType && matchesFacilities && matchesFloor;
   });
@@ -243,7 +273,16 @@ const Rooms = () => {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedType, selectedBedType, selectedFacilities]);
+  }, [selectedType, selectedBedType, selectedFacilities, priceRange, selectedFloor, sortBy]);
+
+  // Add debug logging
+  useEffect(() => {
+    console.log('Total rooms:', sortedRooms.length);
+    console.log('Current page:', currentPage);
+    console.log('Rooms per page:', roomsPerPage);
+    console.log('Total pages:', totalPages);
+    console.log('Current rooms:', currentRooms.length);
+  }, [sortedRooms, currentPage, currentRooms]);
 
   // Function to get image URL based on room type
   const getRoomImage = (type) => {
