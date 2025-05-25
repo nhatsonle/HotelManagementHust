@@ -658,7 +658,7 @@ const Rooms = () => {
           <div className="md:w-3/4 w-full">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-0">
               {currentRooms.map((room) => (
-                <Card key={room.id} className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1" onClick={() => handleRoomClick(room.id)}>
+                <Card key={room.id} className="overflow-hidden border-none shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer" onClick={() => handleRoomClick(room.id)}>
                   <div className="aspect-video relative overflow-hidden">
                     <img
                       src={getRoomImage(room.type)}
