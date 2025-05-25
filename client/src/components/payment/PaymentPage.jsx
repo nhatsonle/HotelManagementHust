@@ -98,15 +98,15 @@ function PaymentPage() {
             <h2 className="text-lg font-semibold mb-6">Booking Information</h2>
             <div className="mb-2 flex justify-between">
               <span className="text-gray-500">Amount to pay</span>
-              <span className="text-2xl font-bold text-blue-700">{Number(amountToPay).toLocaleString('en-US')}<span className="text-base font-normal"> USD</span></span>
+              <span className="text-2xl font-bold text-blue-700">{Number(amountToPay).toLocaleString('vn-VN')}<span className="text-base font-normal"> VND</span></span>
             </div>
             <div className="mb-2 flex justify-between">
               <span className="text-gray-500">Value of the order</span>
-              <span>{Number(amountToPay).toLocaleString('en-US')}<span className="text-xs"> USD</span></span>
+              <span>{Number(amountToPay).toLocaleString('vn-VN')}<span className="text-xs"> VND</span></span>
             </div>
             <div className="mb-2 flex justify-between">
               <span className="text-gray-500">Transaction fee</span>
-              <span>0<span className="text-xs"> USD</span></span>
+              <span>0<span className="text-xs"> VND</span></span>
             </div>
             <div className="mb-2 flex justify-between">
               <span className="text-gray-500">Booking ID</span>

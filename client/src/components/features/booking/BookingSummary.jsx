@@ -33,35 +33,7 @@ function CancelBookingButton({ bookingId, onSuccess, onError, disabled }) {
   );
 }
 
-function ConfirmBookingButton({bookingId, onClick, disabled }) {
-  
-  const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleConfirm = async () => {
-    setIsLoading(true);
-    try {
-    const response = await axios.patch(`https://hotelmanagementhust.onrender.com/api/bookings/${bookingId}/confirm`);
-      if (response.status === 200 && response.data.booking.status === 'Booked') {
-        onSuccess('Create a new room reservation successfully!');
-      } else {
-        onError('Unexpected response from server.');
-      }
-    } catch (err) {
-      onError(err.response?.data?.message || err.message || 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  return (
-    <button
-      className="bg-green-600 text-white rounded-lg px-6 py-2 font-header font-bold hover:bg-green-700 transition-colors"
-      onClick={handleConfirm}
-      disabled={isLoading || disabled}
-    >
-      {isLoading ? 'Confirming...' : 'Confirm Booking'}
-    </button>
-  );
-}
 
 function BookingSummary() {
   const location = useLocation();
@@ -96,37 +68,13 @@ function BookingSummary() {
     setBookingData(null);
   };
 
-  const handleConfirmSuccess = (msg) => {
-    setSuccessMsg(msg); 
-    setBookingData(null);
-  }
+
 
   const handleCancelError = (msg) => {
     setError(msg);
   };
 
-  const handleConfirmBooking = async () => {
-    setIsLoading(true);
-    setError(null);
-    setSuccessMsg('');
-    try {
-      const booking_id = bookingData.booking.booking_id;
-      const response = await axios.patch(`https://hotelmanagementhust.onrender.com/api/bookings/${booking_id}/confirm`);
-      if (response.status === 200 && response.data.booking.status === 'Booked') {
-        setSuccessMsg('Create a new room reservation successfully!');
-        setBookingData(prev => ({
-          ...prev,
-          booking: response.data.booking
-        }));
-      } else {
-        setError('Unexpected response from server.');
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || err.message || 'An error occurred');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+ 
 
   if (!bookingData) {
     return (
@@ -150,10 +98,10 @@ function BookingSummary() {
           <div className="mb-2"><strong>Room:</strong> {bookingData.room_info.room_name || bookingData.room_info.room_number || '-'}</div>
           <div className="mb-2"><strong>Type:</strong> {bookingData.room_info.type_name || '-'}</div>
           <div className="mb-2"><strong>Beds:</strong> {bookingData.room_info.bed_type || '-'}</div>
-          <div className="mb-2"><strong>Price per night:</strong> {bookingData.room_info.base_price_per_night ? `$${bookingData.room_info.base_price_per_night}` : '-'}</div>
+          <div className="mb-2"><strong>Price per night:</strong> {bookingData.room_info.base_price_per_night ? `${bookingData.room_info.base_price_per_night} VND` : '-'}</div>
           <div className="mb-2">
             <strong>Total Amount:</strong> {bookingData.room_info.total_amount !== null && bookingData.room_info.total_amount !== undefined 
-              ? `$${bookingData.room_info.total_amount}`
+              ? `${bookingData.room_info.total_amount} VND`
               : '-'}
           </div>
           <div className="mb-2"><strong>Status:</strong> {bookingData.booking.status}</div>
