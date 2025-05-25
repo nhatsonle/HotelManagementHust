@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import authService from '../../../services/auth.service';
 import BookingSummary from './BookingSummary';
 
 function GuestInfoForm() {
   // Get state passed from BookingSection
   const location = useLocation();
   const navigate = useNavigate();
-  const { checkInDate, checkOutDate, numAdults, numChildren, room_type_id} = location.state || {};
+  const { checkInDate, checkOutDate, numAdults, numChildren = 0, room_type_id} = location.state || {};
   const [guestInfo, setGuestInfo] = useState({
     fullName: '',
     email: '',
@@ -20,7 +21,36 @@ function GuestInfoForm() {
   });
   const [bookingData, setBookingData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error , setError] = useState(null);
+  const [error, setError] = useState(null);
+
+  // Fetch user data if signed in
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const currentUser = authService.getCurrentUser();
+        if (currentUser) {
+          const response = await authService.getProfile();
+          if (response.success) {
+            const userData = response.data.user;
+            setGuestInfo({
+              fullName: userData.full_name || '',
+              email: userData.email || '',
+              phone: userData.Guest?.phone || '',
+              passportNumber: userData.Guest?.passport_number || '',
+              city: userData.Guest?.city || '',
+              region: userData.Guest?.region || '',
+              address: userData.Guest?.address || '',
+              zipcode: userData.Guest?.zip_code || ''
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -31,17 +61,73 @@ function GuestInfoForm() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    let guestId;
+
     try {
-      const guestPayload = { ...guestInfo, name: guestInfo.fullName };
-      delete guestPayload.fullName;
-      const response = await axios.post('http://localhost:3000/api/bookings/initiate', {
+      // Validate required fields
+      if (!checkInDate || !checkOutDate || !numAdults || !numChildren || !room_type_id) {
+        setError('Please ensure all booking details are provided');
+        setIsLoading(false);
+        return;
+      }
+
+      // Get current user's guest_id
+      const currentUser = authService.getCurrentUser();
+      if (!currentUser) {
+        setError('Please sign in to make a booking');
+        setIsLoading(false);
+        return;
+      }
+
+      const userResponse = await authService.getProfile();
+      if (!userResponse.success || !userResponse.data.user.Guest?.guest_id) {
+        setError('Unable to get guest information. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      guestId = userResponse.data.user.Guest.guest_id;
+
+      // Validate guest information
+      if (!guestInfo.fullName || !guestInfo.email) {
+        setError('Please provide your full name and email');
+        setIsLoading(false);
+        return;
+      }
+
+      // Prepare guest info payload
+      const guestInfoPayload = {
+        name: guestInfo.fullName,
+        email: guestInfo.email,
+        phone: guestInfo.phone || '',
+        passport_number: guestInfo.passportNumber || '',
+        city: guestInfo.city || '',
+        region: guestInfo.region || '',
+        address: guestInfo.address || '',
+        zip_code: guestInfo.zipcode || ''
+      };
+
+      // Prepare the complete request payload with proper data types
+      const requestPayload = {
+        guest_id: Number(guestId),
+        room_id: Number(room_type_id),
         check_in_date: checkInDate,
         check_out_date: checkOutDate,
-        num_adults: Number(numAdults),
-        num_children: Number(numChildren),
-        room_type_id : Number(room_type_id),
-        guest_info: guestPayload,
+        num_adults: parseInt(numAdults, 10),
+        num_children: parseInt(numChildren, 10),
+        guest_info: guestInfoPayload
+      };
+
+      // Log the request payload for debugging
+      console.log('Booking request payload:', requestPayload);
+
+      const response = await axios.post('https://hotelmanagementhust-m6i2.onrender.com/api/bookings/initiate', requestPayload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
+      
       if (response.status === 201) {
         const { booking, room_info } = response.data;
         setBookingData({ booking, room_info });
@@ -53,8 +139,22 @@ function GuestInfoForm() {
         setIsLoading(false);
       }
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'An error occurred';
-      setError(msg);
+      console.error('Booking error details:', {
+        message: err.message,
+        response: err.response?.data,
+        status: err.response?.status,
+        payload: {
+          guest_id: guestId,
+          room_id: room_type_id,
+          check_in_date: checkInDate,
+          check_out_date: checkOutDate,
+          num_adults: numAdults,
+          num_children: numChildren
+        }
+      });
+      
+      const errorMessage = err.response?.data?.message || err.message || 'An error occurred while processing your booking';
+      setError(errorMessage);
       setIsLoading(false);
     }
   };
@@ -68,7 +168,7 @@ function GuestInfoForm() {
             <div><strong>Check-in:</strong> {checkInDate || '-'}</div>
             <div><strong>Check-out:</strong> {checkOutDate || '-'}</div>
             <div><strong>Adults:</strong> {numAdults || '-'}</div>
-            <div><strong>Children:</strong> {numChildren || '-'}</div>
+            <div><strong>Children:</strong> {Number(numChildren) || 0}</div>
             <div><strong>Room ID:</strong> {room_type_id || '-'}</div>
           </div>
         </div>

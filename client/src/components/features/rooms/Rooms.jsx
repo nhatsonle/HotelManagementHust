@@ -738,21 +738,27 @@ const Rooms = () => {
                           checkIn &&
                           checkOut &&
                           adults &&
-                          adults >= 1 &&
-                          children !== null &&
-                          children !== undefined
+                          adults >= 1
                         ) {
+                          // Format dates to YYYY-MM-DD without timezone conversion
+                          const formatDate = (date) => {
+                            const year = date.getFullYear();
+                            const month = String(date.getMonth() + 1).padStart(2, '0');
+                            const day = String(date.getDate()).padStart(2, '0');
+                            return `${year}-${month}-${day}`;
+                          };
+
                           navigate('/guest-info', {
                             state: {
-                              checkInDate: checkIn?.toISOString().split('T')[0],
-                              checkOutDate: checkOut?.toISOString().split('T')[0],
+                              checkInDate: formatDate(checkIn),
+                              checkOutDate: formatDate(checkOut),
                               numAdults: adults,
-                              numChildren: children,
+                              numChildren: Number(children) || 0,
                               room_type_id: room.id
                             }
                           });
                         } else {
-                          alert('Please select check-in & check-out dates, adult number & children number before booking.');
+                          alert('Please select check-in & check-out dates and adult number before booking.');
                         }
                       }}
                     >
@@ -763,65 +769,6 @@ const Rooms = () => {
               ))}
             </div>
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                  disabled={currentPage === 1}
-                  className="flex items-center gap-2"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Previous
-                </Button>
-                
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                    // Show first page, last page, current page, and pages around current page
-                    const shouldShow = 
-                      page === 1 || 
-                      page === totalPages || 
-                      Math.abs(page - currentPage) <= 1;
-
-                    if (!shouldShow) {
-                      // Show ellipsis for skipped pages
-                      if (page === 2 || page === totalPages - 1) {
-                        return <span key={page} className="px-2">...</span>;
-                      }
-                      return null;
-                    }
-
-                    return (
-                      <Button
-                        key={page}
-                        variant={currentPage === page ? undefined : "outline"}
-                        onClick={() => setCurrentPage(page)}
-                        className={`w-10 h-10 font-bold transition-all duration-150
-                          ${currentPage === page ? 'bg-black text-white border-black shadow-md cursor-default pointer-events-none !bg-[#000] !text-white !border-[#000] !opacity-100' : 'bg-white text-black border-gray-300 hover:bg-gray-100'}
-                        `}
-                        disabled={currentPage === page}
-                        tabIndex={currentPage === page ? -1 : 0}
-                        style={currentPage === page ? { backgroundColor: '#000', color: '#fff', borderColor: '#000', opacity: 1 } : {}}
-                      >
-                        {page}
-                      </Button>
-                    );
-                  })}
-                </div>
-
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-                  disabled={currentPage === totalPages}
-                  className="flex items-center gap-2"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-
             {/* No Results */}
             {filteredRooms.length === 0 && (
               <div className="text-center py-12">
@@ -831,12 +778,73 @@ const Rooms = () => {
             )}
           </div>
         </div>
+        {/* Pagination Controls - moved outside room grid for full-page centering */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8 w-full">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="flex items-center gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Previous
+            </Button>
+            <div className="flex items-center gap-2">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                // Show first page, last page, current page, and pages around current page
+                const shouldShow = 
+                  page === 1 || 
+                  page === totalPages || 
+                  Math.abs(page - currentPage) <= 1;
+
+                if (!shouldShow) {
+                  // Show ellipsis for skipped pages
+                  if (page === 2 || page === totalPages - 1) {
+                    return <span key={page} className="px-2">...</span>;
+                  }
+                  return null;
+                }
+
+                return (
+                  <Button
+                    key={page}
+                    variant={currentPage === page ? undefined : "outline"}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-10 h-10 font-bold transition-all duration-150
+                      ${currentPage === page ? 'bg-black text-white border-black shadow-md cursor-default pointer-events-none !bg-[#000] !text-white !border-[#000] !opacity-100' : 'bg-white text-black border-gray-300 hover:bg-gray-100'}
+                    `}
+                    disabled={currentPage === page}
+                    tabIndex={currentPage === page ? -1 : 0}
+                    style={currentPage === page ? { backgroundColor: '#000', color: '#fff', borderColor: '#000', opacity: 1 } : {}}
+                  >
+                    {page}
+                  </Button>
+                );
+              })}
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="flex items-center gap-2"
+            >
+              Next
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Add modal component to display feedback */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white/95 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto shadow-2xl transform transition-all">
+        <div
+          className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50"
+          onClick={e => {
+            if (e.target === e.currentTarget) setIsModalOpen(false);
+          }}
+        >
+          <div className="bg-white/95 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto shadow-2xl transform transition-all" onClick={e => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-semibold">Room Feedback</h2>
               <button 
