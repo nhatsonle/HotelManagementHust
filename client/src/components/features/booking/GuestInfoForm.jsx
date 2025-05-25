@@ -65,7 +65,7 @@ function GuestInfoForm() {
 
     try {
       // Validate required fields
-      if (!checkInDate || !checkOutDate || !numAdults || !numChildren || !room_type_id) {
+      if (!checkInDate || !checkOutDate || !numAdults || !room_type_id) {
         setError('Please ensure all booking details are provided');
         setIsLoading(false);
         return;
