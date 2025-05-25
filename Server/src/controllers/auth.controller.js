@@ -51,6 +51,21 @@ const resetPasswordConfirmSchema = Joi.object({
     })
 });
 
+// Validation schema for user update
+const userUpdateSchema = Joi.object({
+  email: Joi.string().email().max(100),
+  full_name: Joi.string().max(100),
+  is_active: Joi.boolean(),
+  guest: Joi.object({
+    phone: Joi.string().max(20),
+    passport_number: Joi.string().max(50),
+    address: Joi.string(),
+    city: Joi.string().max(100),
+    region: Joi.string().max(100),
+    zip_code: Joi.string().max(20)
+  })
+});
+
 // Generate JWT token
 const generateToken = (user) => {
   return jwt.sign(

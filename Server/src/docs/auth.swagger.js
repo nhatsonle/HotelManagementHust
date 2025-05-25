@@ -167,6 +167,10 @@
  *               type: string
  *               description: Guest's phone number
  *               example: "+1234567890"
+ *             passport_number:
+ *               type: string
+ *               description: Guest's passport number
+ *               example: "P12345678"
  *             address:
  *               type: string
  *               description: Guest's address
