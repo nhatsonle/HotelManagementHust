@@ -8,10 +8,20 @@ const Booking = require('./Booking.model');
 const Rate = require('./Rate.model');
 const Room = require('./Room.model');
 const RoomType = require('./RoomType.model');
+const User = require('./User.model');
 
 // ----- ĐỊNH NGHĨA CÁC MỐI QUAN HỆ (ASSOCIATIONS) -----
 
-// 1. Guest <-> Booking (Một Guest có nhiều Booking, một Booking thuộc về một Guest)
+// 1. Guest <-> User (One-to-One relationship)
+Guest.belongsTo(User, {
+  foreignKey: 'user_id',
+  onDelete: 'SET NULL'
+});
+User.hasOne(Guest, {
+  foreignKey: 'user_id'
+});
+
+// 2. Guest <-> Booking (One-to-Many relationship)
 Guest.hasMany(Booking, {
   foreignKey: 'guest_id', // Khóa ngoại trong bảng 'bookings'
   as: 'bookings'          // Tên bí danh cho mối quan hệ (ví dụ: guest.getBookings())
@@ -21,7 +31,7 @@ Booking.belongsTo(Guest, {
   as: 'guest'
 });
 
-// 2. Guest <-> Feedback
+// 3. Guest <-> Feedback
 Guest.hasMany(Feedback, {
   foreignKey: 'guest_id',
   as: 'feedbacks'
@@ -31,7 +41,7 @@ Feedback.belongsTo(Guest, {
   as: 'guest'
 });
 
-// 3. RoomType <-> Room
+// 4. RoomType <-> Room
 RoomType.hasMany(Room, {
   foreignKey: 'type_id',
   as: 'rooms'
@@ -41,7 +51,7 @@ Room.belongsTo(RoomType, {
   as: 'roomType'
 });
 
-// 4. RoomType <-> Rate
+// 5. RoomType <-> Rate
 RoomType.hasMany(Rate, {
   foreignKey: 'type_id',
   as: 'rates'
@@ -51,7 +61,7 @@ Rate.belongsTo(RoomType, {
   as: 'roomType'
 });
 
-// 5. Room <-> Booking
+// 6. Room <-> Booking
 Room.hasMany(Booking, {
   foreignKey: 'room_id',
   as: 'bookings'
@@ -61,7 +71,7 @@ Booking.belongsTo(Room, {
   as: 'room'
 });
 
-// 6. Room <-> Feedback
+// 7. Room <-> Feedback
 Room.hasMany(Feedback, {
   foreignKey: 'room_id',
   as: 'feedbacks'
@@ -93,5 +103,6 @@ module.exports = {
   Booking,
   Rate,
   Room,
-  RoomType
+  RoomType,
+  User
 };

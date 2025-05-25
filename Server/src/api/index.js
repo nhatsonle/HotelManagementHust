@@ -6,16 +6,16 @@ const guestRouter = require('./guest.routes');
 //const bookingRouter = require('./booking.routes');
 const dashboardRouter = require('./dashboard.routes');
 const feedbackRouter = require('./feedback.routes');
-
-
-
-
+const authRouter = require('./auth.routes');
+const userRoutes = require('./user.routes');
 const apiRouter = express.Router();
 
-//apiRouter.use('/rooms', roomRouter);
-apiRouter.use('/guests', guestRouter);
-//apiRouter.use('/bookings', bookingRouter);
-apiRouter.use('/dashboard', dashboardRouter);
-apiRouter.use('/feedbacks', feedbackRouter);
+// Mount các router con
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/rooms', roomRouter);
+apiRouter.use('/room-types', roomTypeRouter);
+apiRouter.use('/rates', rateRouter);
+apiRouter.use('/feedback', feedbackRouter);
+apiRouter.use('/users', userRoutes);
 
 module.exports = apiRouter;
