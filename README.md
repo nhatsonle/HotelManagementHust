@@ -18,6 +18,9 @@
 - **Cơ sở dữ liệu**: PostgreSQL
 - **Triển khai**: Vercel (Frontend), Render (Backend)
 
+## 🧑‍💻 Cách cài đặt
+
+
 
 ## 👨‍💻 Nhóm phát triển
 
