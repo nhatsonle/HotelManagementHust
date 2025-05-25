@@ -96,15 +96,33 @@ router.get('/', bookingController.getAllBooking);
 
 
 router.get('/:bookingId', bookingController.getBookingById);
-router.get('/guest/:guestName', async (req, res, next) => {
+router.get('/guest/name/:guestName', async (req, res, next) => {
   try {
     const { guestName } = req.params;
     const bookings = await bookingController.findAllBookingsByGuestName(guestName);
-    
+
     if (bookings.length > 0) {
       res.status(200).json(bookings);
     } else {
-      res.status(404).json({ message: `No bookings found for guest: ${guestName}` });
+      res.status(404).json({ message: `No bookings found for guest name: ${guestName}` });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+
+
+
+router.get('/guest/id/:guestID', async (req, res, next) => {
+  try {
+    const { guestID } = req.params;
+    const bookings = await bookingController.getBookingsByGuestID(guestID);
+
+    if (bookings.length > 0) {
+      res.status(200).json(bookings);
+    } else {
+      res.status(404).json({ message: `No bookings found for guest ID: ${guestID}` });
     }
   } catch (error) {
     next(error);
@@ -314,7 +332,7 @@ router.delete('/:bookingId', bookingController.deleteBooking);
 
 /**
  * @swagger
- * /bookings/guest/{guestName}:
+ * /bookings/guest/name/{guestName}:
  *   get:
  *     summary: Find all bookings by guest name
  *     tags: [Bookings]
@@ -336,5 +354,35 @@ router.delete('/:bookingId', bookingController.deleteBooking);
  *       404:
  *         description: No bookings found for this guest
  */
+
+
+/**
+ * @swagger
+ * /bookings/guest/id/{guestID}:
+ *   get:
+ *     summary: Find all bookings by guest ID
+ *     tags: [Bookings]
+ *     parameters:
+ *       - in: path
+ *         name: guestID
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the guest to search for
+ *     responses:
+ *       200:
+ *         description: List of bookings found for the guest
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Booking'
+ *       404:
+ *         description: No bookings found for this guest ID
+ *       500:
+ *         description: Server error
+ */
+
 
 module.exports = router;

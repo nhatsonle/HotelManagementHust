@@ -195,13 +195,18 @@ const bookingController = {
     }
   },
 
-getBookingById: async (req, res, next) => {
+getBookingById : async (req, res, next) => {
   try {
     const { bookingId } = req.params;
     const booking = await Booking.findByPk(bookingId);
-    res.status(200).json({ booking });
-  } catch (error) {  
-    console.error('Lỗi khi lấy booking theo ID:', error);
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    res.status(200).json(booking);
+  } catch (error) {
+    console.error('Error fetching booking by ID:', error);
     next(error);
   }
 },
@@ -427,9 +432,30 @@ confirmBooking: async (req, res, next) => {
       console.error('Lỗi khi xác nhận booking:', error);
       next(error);
   }
-}
+},
 // ...
 
-};
+getBookingsByGuestID: async (guestID) => {
+  try {
+    const bookings = await Booking.findAll({
+          where: {
+           guest_id : guestID
+          }
+    });
+
+    if (bookings.length > 0) {
+      console.log(`Tìm thấy ${bookings.length} booking(s) cho khách có ID: ${guestID}`);
+      // bookings.forEach(b => console.log(b.toJSON()));
+      return bookings;
+    } else {
+      console.log(`Không tìm thấy booking nào cho khách có ID: ${guestID}`);
+      return [];
+    }
+  } catch (error) {
+    console.error("Lỗi khi tìm tất cả bookings theo ID khách:", error);
+    throw error;
+  }
+},
+}
 
 module.exports = bookingController;
