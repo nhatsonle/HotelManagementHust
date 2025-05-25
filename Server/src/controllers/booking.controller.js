@@ -177,7 +177,7 @@ const bookingController = {
         booking.status = cancelledStatus;
         await booking.save();
         
-        await t.commit();
+       
         res.status(200).json({ message: 'Booking đã được hủy thành công.', booking });
     } catch (error) {
         console.error('Lỗi khi hủy booking:', error);
