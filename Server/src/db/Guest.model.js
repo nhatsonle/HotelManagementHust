@@ -47,6 +47,15 @@ const Guest = sequelize.define('Guest', {
   zip_code: {
     type: DataTypes.STRING(20),   // CHARACTER VARYING(20)
     allowNull: true
+  },
+  user_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    unique: true,
+    references: {
+      model: 'users',
+      key: 'user_id'
+    }
   }
 }, {
   // Các tùy chọn cho Model

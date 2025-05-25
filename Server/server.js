@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./src/config/swagger.config');
@@ -10,8 +11,6 @@ app.use(cors({
   origin: '*', // or '*' for dev
   optionsSuccessStatus: 200
 }));
-
-
 
 app.use(express.json());
 
