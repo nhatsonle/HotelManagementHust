@@ -18,7 +18,23 @@
 - **Cơ sở dữ liệu**: PostgreSQL
 - **Triển khai**: Vercel (Frontend), Render (Backend)
 
-## 🧑‍💻 Cách cài đặt
+## 🧑‍💻 Cách cài đặt (Usage)
+
+### Bước 1: Clone this repository
+```bash
+git clone https://github.com/nhatsonle/HotelManagementHust.git
+cd client
+```
+
+### Bước 2: Build required dependencies
+```bash
+npm install
+```
+
+### Bước 3: Run the application
+```bash
+npm run dev
+```
 
 
 
