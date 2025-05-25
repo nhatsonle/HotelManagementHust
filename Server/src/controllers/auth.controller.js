@@ -419,12 +419,9 @@ const changePassword = async (req, res) => {
       });
     }
 
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(newPassword, salt);
-
-    // Update password
-    await user.update({ password_hash: passwordHash });
+    // Update password using the model's password handling
+    user.password_hash = newPassword; // The model's beforeUpdate hook will hash this
+    await user.save();
 
     return res.status(200).json({
       success: true,
