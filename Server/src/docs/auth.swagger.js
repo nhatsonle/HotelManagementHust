@@ -227,6 +227,9 @@
  *                     name:
  *                       type: string
  *                       example: John Doe
+ *                     passport_number:
+ *                       type: string
+ *                       example: "P12345678"
  *                     phone:
  *                       type: string
  *                       example: "+1234567890"
@@ -602,6 +605,7 @@
  *                 full_name: John Doe
  *                 is_active: true
  *                 guest:
+ *                   passport_number: "P12345678"
  *                   phone: "+1234567890"
  *                   address: "123 Main St"
  *                   city: "New York"

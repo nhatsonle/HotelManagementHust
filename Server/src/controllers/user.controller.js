@@ -11,11 +11,12 @@ const userUpdateSchema = Joi.object({
   is_active: Joi.boolean(),
   guest: Joi.object({
     phone: Joi.string().max(20),
+    passport_number: Joi.string().max(50),
     address: Joi.string(),
     city: Joi.string().max(100),
     region: Joi.string().max(100),
     zip_code: Joi.string().max(20)
-  })
+  }).unknown(false) // This ensures only defined fields are allowed
 });
 
 // Get all users with pagination and search
@@ -110,7 +111,7 @@ const updateUser = async (req, res) => {
     const { userId } = req.params;
 
     // Validate request body
-    const { error, value } = userUpdateSchema.validate(req.body);
+    const { error, value } = userUpdateSchema.validate(req.body, { abortEarly: false });
     if (error) {
       return res.status(400).json({
         success: false,
@@ -138,21 +139,16 @@ const updateUser = async (req, res) => {
     // Update user
     await user.update(userData, { transaction });
 
-    // Update guest information if provided
+    // Update or create guest information if provided
     if (guest) {
-      const guestRecord = await Guest.findOne({
-        where: { user_id: userId }
+      const [guestRecord] = await Guest.findOrCreate({
+        where: { user_id: userId },
+        defaults: { ...guest, user_id: userId },
+        transaction
       });
 
       if (guestRecord) {
         await guestRecord.update(guest, { transaction });
-      } else {
-        // Create new guest record if it doesn't exist
-        await Guest.create({
-          ...guest,
-          user_id: userId,
-          name: userData.full_name || user.full_name
-        }, { transaction });
       }
     }
 
@@ -162,7 +158,8 @@ const updateUser = async (req, res) => {
       include: [{
         model: Guest,
         as: 'Guest'
-      }]
+      }],
+      transaction
     });
 
     // Commit transaction
@@ -191,7 +188,10 @@ const updateUser = async (req, res) => {
 
 // Delete user
 const deleteUser = async (req, res) => {
+  let transaction;
+
   try {
+    transaction = await sequelize.transaction();
     const { userId } = req.params;
 
     const user = await User.findByPk(userId);
@@ -205,13 +205,20 @@ const deleteUser = async (req, res) => {
       });
     }
 
-    await user.destroy();
+    await user.destroy({ transaction });
+
+    await transaction.commit();
 
     return res.status(200).json({
       success: true,
       message: 'User deleted successfully'
     });
   } catch (error) {
+    // Rollback transaction if it exists
+    if (transaction) {
+      await transaction.rollback();
+    }
+
     console.error('Delete user error:', error);
     return res.status(500).json({
       success: false,
