@@ -68,7 +68,11 @@ const getUserById = async (req, res) => {
     const { userId } = req.params;
 
     const user = await User.findByPk(userId, {
-      attributes: { exclude: ['password_hash'] }
+      attributes: { exclude: ['password_hash'] },
+      include: [{
+        model: Guest,
+        as: 'Guest'
+      }]
     });
 
     if (!user) {
